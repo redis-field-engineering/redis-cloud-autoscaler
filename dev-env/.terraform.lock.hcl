@@ -1,0 +1,43 @@
+# This file is maintained automatically by "terraform init".
+# Manual edits may be lost in future updates.
+
+provider "registry.terraform.io/hashicorp/google" {
+  version = "6.18.1"
+  hashes = [
+    "h1:9hflnSuKoJDbgRd3Lr7YEn2DKCcD9vyLwvDHRHEmp/o=",
+    "zh:43543160dc2cee6f05b37eadc49e0da2ed99b1d16ca40dcb74de4ec17bf30430",
+    "zh:44e92661b6b2e7823f931c459780eaa844c7ee8fecca676aa632ededfc0d6180",
+    "zh:504cc9967f9e51969d012338e7b36bf689a672e0c780d821ea36bbad0d1bd4c4",
+    "zh:6e3c24761dd073984274dcdb5e5a7f81619c2665c2aef5b35769b31cb1c72bb8",
+    "zh:86ce6f0049a4d243574f5c3a31b6e405cc48e203f3d97722615779a5f06143e4",
+    "zh:bf2b79a89ea02d146a3ea0c1c1232bb065ba2283c54f4a3d4ac8b04e11f2119d",
+    "zh:ca5e3a2758c92a934e91a5d1919947300e0645e2ba71aeb9884b896e6b123d3f",
+    "zh:d8f4f55faea7250226839a02c6134d193f3d072293452be58e8181aab925b1ad",
+    "zh:e5189f66c2c4e1264092c79d11bc07e7dc82d99701dc0592dcd879a746ec2910",
+    "zh:e6471441d4565910a67d79f480dafc8c1d19e29ae1588b0515269f7fb815f40f",
+    "zh:e6514660a85b8f921b968576250ac3d983cda1c06aaef801c21e908a8b9f873b",
+    "zh:f569b65999264a9416862bca5cd2a6177d94ccb0424f3a4ef424428912b9cb3c",
+  ]
+}
+
+provider "registry.terraform.io/redislabs/rediscloud" {
+  version     = "2.0.0"
+  constraints = "2.0.0"
+  hashes = [
+    "h1:OdRcCZlamEA8tJQQm7tv0EOlYAmsEmdNNWP50Cx0RSg=",
+    "zh:169ef9a57daa945c8d8c755ddc98e9aebb11371ed468845909063b7be9725630",
+    "zh:202de4ac8ac50d2dc3ef4df85f1f62a97dd54fb0812c678b644c586c62074171",
+    "zh:4a3c29bc77f0e4d41e7f289339be3d9099ad9506d769c0c64e8809fb0cf8954e",
+    "zh:5596760c18b14d922e16f6470eba873ae22edf48fab07b977f44ab8ac196e9a5",
+    "zh:5760435cd9936399c570f386ab3344a5a3d460cf8322d3869fbce9ac2ac693f9",
+    "zh:67f867280bb90fcd49fc414492c3e49cbe30316bdf3aab360872f397cca27dca",
+    "zh:93e70eec5208a8537e116f7267683093300d444079696d7278b87eb0c229925d",
+    "zh:9c18a3a1b6916e508884d9b88938c42c108c530bdc6fb1f785edc5089bb2664e",
+    "zh:9f3460f1f4dd085ba4d1f17ca3ef7cd3402620430c30cda6775b621e0a94f07f",
+    "zh:a323ef293d1e3284b461c7c7c7b95f1b17ad5b1ba27c530663bd56aa6c9b3d1b",
+    "zh:a360169db4629d51416f049e09ac10f776c79a90729ea0670c2fdf81eecff81e",
+    "zh:ca91e02670128b1aad808f8cc97f7f4a65431bac3fccf1efa5f7bdc7ad0d600c",
+    "zh:e94c63f137b43f07b5ab90788962cd14dbd33ede1b560636db4d5aaf091a9a83",
+    "zh:eb41c5eb0097ab7a8e65211c79145d0e2c214030480c8700ef5511144eb2b6f7",
+  ]
+}

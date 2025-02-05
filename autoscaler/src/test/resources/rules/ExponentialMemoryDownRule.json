@@ -1,0 +1,7 @@
+{
+  "dbId": "1",
+  "ruleType": "LowMemory",
+  "scaleType": "Exponential",
+  "scaleValue": 0.5,
+  "scaleFloor": 0.2
+}

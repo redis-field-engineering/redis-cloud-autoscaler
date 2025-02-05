@@ -1,0 +1,7 @@
+{
+  "dbId": "1",
+  "ruleType": "HighMemory",
+  "scaleType": "Deterministic",
+  "scaleValue": 2,
+  "scaleCeiling": 2
+}

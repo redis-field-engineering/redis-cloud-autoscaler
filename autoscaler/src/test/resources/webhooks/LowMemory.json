@@ -1,0 +1,76 @@
+{
+  "receiver": "webhook-receiver",
+  "status": "firing",
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "LowMemory",
+        "cluster": "c36206.us-east1-2.gcp.cloud.rlrcp.com",
+        "db": "{{db_id}}",
+        "exporter": "redis",
+        "instance": "redis-16396.internal.c36206.us-east1-2.gcp.cloud.rlrcp.com:8070",
+        "job": "rediscloud-v2",
+        "node": "1",
+        "redis": "4",
+        "role": "master",
+        "severity": "warning",
+        "slots": "0-16383",
+        "status": "active"
+      },
+      "annotations": {
+        "description": "Redis memory usage is high",
+        "summary": "High Redis Memory Usage"
+      },
+      "startsAt": "2025-01-27T17:31:37.496Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "http://autoscale-vm-prometheus:9090/graph?g0.expr=%28redis_server_used_memory+%2F+redis_server_maxmemory%29+%2A+100+%3E+0\u0026g0.tab=1",
+      "fingerprint": "43aea637c3b83489"
+    },
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "LowMemory",
+        "cluster": "c36206.us-east1-2.gcp.cloud.rlrcp.com",
+        "db": "{{db_id}}",
+        "exporter": "redis",
+        "instance": "redis-16396.internal.c36206.us-east1-2.gcp.cloud.rlrcp.com:8070",
+        "job": "rediscloud-v2",
+        "node": "2",
+        "redis": "5",
+        "role": "slave",
+        "severity": "warning",
+        "slots": "0-16383",
+        "status": "active"
+      },
+      "annotations": {
+        "description": "Redis memory usage is high",
+        "summary": "High Redis Memory Usage"
+      },
+      "startsAt": "2025-01-27T17:31:37.496Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "http://autoscale-vm-prometheus:9090/graph?g0.expr=%28redis_server_used_memory+%2F+redis_server_maxmemory%29+%2A+100+%3E+0\u0026g0.tab=1",
+      "fingerprint": "e18e5a7f4925635a"
+    }
+  ],
+  "groupLabels": {},
+  "commonLabels": {
+    "alertname": "LowMemory",
+    "cluster": "c36206.us-east1-2.gcp.cloud.rlrcp.com",
+    "db": "{{db_id}}",
+    "exporter": "redis",
+    "instance": "redis-16396.internal.c36206.us-east1-2.gcp.cloud.rlrcp.com:8070",
+    "job": "rediscloud-v2",
+    "severity": "warning",
+    "slots": "0-16383",
+    "status": "active"
+  },
+  "commonAnnotations": {
+    "description": "Redis memory usage is high",
+    "summary": "High Redis Memory Usage"
+  },
+  "externalURL": "http://autoscale-vm-prometheus:9093",
+  "version": "4",
+  "groupKey": "{}:{}",
+  "truncatedAlerts": 0
+}
