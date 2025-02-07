@@ -98,9 +98,6 @@ resource "google_compute_instance" "auto_scale_test_vm" {
 
     access_config{}
   }
-
-  
-  
 }
 
 data "rediscloud_payment_method" "card"{

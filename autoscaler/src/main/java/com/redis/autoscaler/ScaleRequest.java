@@ -10,7 +10,7 @@ import lombok.Setter;
 @Builder
 @Data
 public class ScaleRequest {
-    private double datasetSizeInGb;
+    private Double datasetSizeInGb;
     private ThroughputMeasurement throughputMeasurement;
 
     @Override

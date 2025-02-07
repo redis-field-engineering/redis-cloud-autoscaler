@@ -3,10 +3,7 @@ package com.redis.autoscaler.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.redis.autoscaler.*;
-import com.redis.autoscaler.documents.AlertName;
-import com.redis.autoscaler.documents.Rule;
-import com.redis.autoscaler.documents.Task;
-import com.redis.autoscaler.documents.TaskResponse;
+import com.redis.autoscaler.documents.*;
 import org.apache.hc.client5.http.HttpResponseException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -67,43 +64,47 @@ public class RedisCloudDatabaseService {
 
         ScaleRequest scaleRequest;
         switch (rule.getRuleType()){
-            case HighMemory -> {
-                // we are at max configured scale, do nothing
-                if(db.getDatasetSizeInGb() >= rule.getScaleCeiling()){
-                    LOG.info("DB: {} ID: {} is above the memory scale ceiling: {}gb",db.getName(), dbId, rule.getScaleCeiling());
-                    return Optional.empty();
-                }
-                double newDatasetSizeInGb = getNewDatasetSizeInGb(rule, db);
-                scaleRequest = ScaleRequest.builder().datasetSizeInGb(newDatasetSizeInGb).build();
-            }
-            case LowMemory -> {
+            case IncreaseMemory, DecreaseMemory -> {
                 // we are at min configured scale, do nothing
                 if(db.getDatasetSizeInGb() <= rule.getScaleFloor()){
                     LOG.info("DB: {} ID: {} is below the memory scale floor: {}gb",db.getName(), dbId, rule.getScaleFloor());
                     return Optional.empty();
                 }
                 double newDatasetSizeInGb = getNewDatasetSizeInGb(rule, db);
+                if(newDatasetSizeInGb == db.getDatasetSizeInGb()){
+                    LOG.info("DB: {} ID: {} is already at the min/max memory: {}gb",db.getName(), dbId, newDatasetSizeInGb);
+                    return Optional.empty();
+                }
+
                 scaleRequest = ScaleRequest.builder().datasetSizeInGb(newDatasetSizeInGb).build();
             }
-            case HighThroughput -> {
-                // we are at max configured scale, do nothing
-                if(db.getThroughputMeasurement().getValue() >= rule.getScaleCeiling()){
-                    LOG.info("DB: {} ID: {} is above the throughput scale ceiling: {}ops/sec",db.getName(), dbId, rule.getScaleCeiling());
+            case IncreaseThroughput, DecreaseThroughput -> {
+                if(db.getThroughputMeasurement().getBy() != ThroughputMeasurement.ThroughputMeasureBy.OperationsPerSecond && rule.getScaleType() != ScaleType.Deterministic){
+                    LOG.info("DB: {} ID: {} is not measured by ops/sec, cannot apply ops/sec rule: {}",db.getName(), dbId, rule.getRuleType());
                     return Optional.empty();
                 }
+
                 long newThroughput = getNewThroughput(rule, db);
+                if(newThroughput == db.getThroughputMeasurement().getValue()){
+                    LOG.info("DB: {} ID: {} is already at the min/max ops/sec: {}",db.getName(), dbId, newThroughput);
+                    return Optional.empty();
+                }
 
                 scaleRequest = ScaleRequest.builder().throughputMeasurement(new ThroughputMeasurement(ThroughputMeasurement.ThroughputMeasureBy.OperationsPerSecond, newThroughput)).build();
             }
-            case LowThroughput -> {
-                // we are at min configured scale, do nothing
-                if(db.getThroughputMeasurement().getValue() <= rule.getScaleFloor()){
-                    LOG.info("DB: {} ID: {} is below the throughput scale floor: {}ops/sec",db.getName(), dbId, rule.getScaleFloor());
+            case IncreaseShards, DecreaseShards -> {
+                if(db.getThroughputMeasurement().getBy() != ThroughputMeasurement.ThroughputMeasureBy.NumberOfShards && rule.getScaleType() != ScaleType.Deterministic){
+                    LOG.info("DB: {} ID: {} is not measured by number of shards, cannot apply shard rule: {}",db.getName(), dbId, rule.getRuleType());
                     return Optional.empty();
                 }
-                long newThroughput = getNewThroughput(rule, db);
 
-                scaleRequest = ScaleRequest.builder().throughputMeasurement(new ThroughputMeasurement(ThroughputMeasurement.ThroughputMeasureBy.OperationsPerSecond, newThroughput)).build();
+                long newShardCount = getNewShardCount(rule, db);
+                if(newShardCount == db.getThroughputMeasurement().getValue()){
+                    LOG.info("DB: {} ID: {} is already at the min/max shard count: {}",db.getName(), dbId, newShardCount);
+                    return Optional.empty();
+                }
+
+                scaleRequest = ScaleRequest.builder().throughputMeasurement(new ThroughputMeasurement(ThroughputMeasurement.ThroughputMeasureBy.NumberOfShards, newShardCount)).build();
             }
             default -> {
                 return Optional.empty();
@@ -113,10 +114,52 @@ public class RedisCloudDatabaseService {
         return Optional.of(scaleDatabase(dbId, scaleRequest));
     }
 
+    private static long getNewShardCount(Rule rule, RedisCloudDatabase db){
+        long newShards;
+        long currentShards = db.getThroughputMeasurement().getValue();
+        if(rule.getRuleType() == RuleType.IncreaseShards){
+            switch (rule.getScaleType()){
+                case Step -> {
+                    newShards = currentShards + (long)rule.getScaleValue();
+                }
+                case Exponential -> {
+                    newShards = (long)Math.ceil(currentShards * rule.getScaleValue());
+                }
+                case Deterministic -> {
+                    newShards = (long)rule.getScaleValue();
+                }
+
+                default -> throw new IllegalStateException("Unexpected value: " + rule.getScaleType());
+            }
+
+            newShards = Math.min(newShards, (long)rule.getScaleCeiling());
+        } else if(rule.getRuleType() == RuleType.DecreaseShards){
+            switch (rule.getScaleType()){
+                case Step -> {
+                    newShards = currentShards - (long)rule.getScaleValue();
+                }
+                case Exponential -> {
+                    newShards = (long)Math.ceil(db.getThroughputMeasurement().getValue() * rule.getScaleValue());
+                }
+                case Deterministic -> {
+                    newShards = (long)rule.getScaleValue();
+                }
+
+                default -> throw new IllegalStateException("Unexpected value: " + rule.getScaleType());
+            }
+
+            newShards = (long)Math.max(newShards, rule.getScaleFloor());
+        } else {
+            throw new IllegalStateException("Unexpected value: " + rule.getRuleType());
+        }
+
+        return newShards;
+    }
+
     private static long getNewThroughput(Rule rule, RedisCloudDatabase db){
         long newThroughput;
         long currentThroughput = db.getThroughputMeasurement().getValue();
-        if(rule.getRuleType() == AlertName.HighThroughput){
+        if(rule.getRuleType() == RuleType.IncreaseThroughput){
             switch (rule.getScaleType()){
                 case Step -> {
                     newThroughput = currentThroughput + (long)rule.getScaleValue();
@@ -132,7 +175,7 @@ public class RedisCloudDatabaseService {
             }
 
             newThroughput = Math.min(newThroughput, (long)rule.getScaleCeiling());
-        } else if(rule.getRuleType() == AlertName.LowThroughput){
+        } else if(rule.getRuleType() == RuleType.DecreaseThroughput){
             switch (rule.getScaleType()){
                 case Step -> {
                     newThroughput = currentThroughput - (long)rule.getScaleValue();
@@ -152,12 +195,16 @@ public class RedisCloudDatabaseService {
             throw new IllegalStateException("Unexpected value: " + rule.getRuleType());
         }
 
-        return newThroughput;
+        return  roundUpToNearest500(newThroughput);
+    }
+
+    public static long roundUpToNearest500(long value){
+        return (long) (Math.ceil(value / 500.0) * 500);
     }
 
     private static double getNewDatasetSizeInGb(Rule rule, RedisCloudDatabase db) {
         double newDatasetSizeInGb;
-        if(rule.getRuleType() == AlertName.HighMemory){
+        if(rule.getRuleType() == RuleType.IncreaseMemory){
             switch (rule.getScaleType()){
                 case Step -> {
                     newDatasetSizeInGb = db.getDatasetSizeInGb() + rule.getScaleValue();
@@ -173,7 +220,7 @@ public class RedisCloudDatabaseService {
             }
 
             newDatasetSizeInGb = Math.min(newDatasetSizeInGb, rule.getScaleCeiling());
-        } else if(rule.getRuleType() == AlertName.LowMemory){
+        } else if(rule.getRuleType() == RuleType.DecreaseMemory){
             switch (rule.getScaleType()){
                 case Step -> {
                     newDatasetSizeInGb = roundUpToNearestTenth(db.getDatasetSizeInGb() - rule.getScaleValue());

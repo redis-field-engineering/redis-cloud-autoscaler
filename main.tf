@@ -174,10 +174,11 @@ resource "google_compute_instance" "autoscale-vm-prometheus" {
     rule_files:
         - /etc/prometheus/alert.rules
     alerting:
-        alertmanagers:
-            - static_configs:
-                - targets:
-                    - 'localhost:9093'
+      alertmanagers:
+        - static_configs:
+          - targets:
+            # Alertmanager's default port is 9093
+            - localhost:9093
 
     scrape_configs:
       - job_name: 'prometheus'
@@ -211,7 +212,7 @@ resource "google_compute_instance" "autoscale-vm-prometheus" {
     groups:
         - name: RedisAlerts
           rules:
-            - alert: HighMemory
+            - alert: IncreaseMemory
               expr: sum by (bdb, instance, db) (redis_server_used_memory) / sum by (bdb, instance, db) (redis_server_maxmemory) * 100 > 80
               for: 1m
               labels:
@@ -219,7 +220,7 @@ resource "google_compute_instance" "autoscale-vm-prometheus" {
               annotations:
                 summary: "High Redis Memory Usage"
                 description: "Redis memory usage is high"
-            - alert: LowMemory
+            - alert: DecreaseMemory
               expr: sum by (bdb, instance, db) (redis_server_used_memory) / sum by (bdb, instance, db) (redis_server_maxmemory) * 100 < 20
               for: 1m
               labels:
@@ -227,7 +228,7 @@ resource "google_compute_instance" "autoscale-vm-prometheus" {
               annotations:
                 summary: "Low Redis Memory Usage"
                 description: "Redis memory usage is low"
-            - alert: HighThroughput
+            - alert: IncreaseThroughput
               expr: sum by (db, instance) (irate(endpoint_write_requests[1m]) + irate(endpoint_read_requests[1m])) / on(db) group_left() redis_db_configured_throughput * 100 > 80
               for: 1m
               labels:
@@ -235,8 +236,8 @@ resource "google_compute_instance" "autoscale-vm-prometheus" {
               annotations:
                 summary: "High Redis Throughput"
                 description: "Redis throughput is high"
-            - alert: LowThroughput
-              expr: sum by (db, instance) (irate(endpoint_write_requests[1m]) + irate(endpoint_read_requests[1m)) / on(db) group_left() redis_db_configured_throughput * 100 < 20
+            - alert: DecreaseThroughput
+              expr: sum by (db, instance) (irate(endpoint_write_requests[1m]) + irate(endpoint_read_requests[1m])) / on(db) group_left() redis_db_configured_throughput * 100 < 20
               for: 1m
               labels:
                 severity: warning
@@ -250,6 +251,7 @@ resource "google_compute_instance" "autoscale-vm-prometheus" {
       resolve_timeout: 1m
     route:
         receiver: webhook-receiver
+        repeat_interval: 1m
     receivers:
       - name: webhook-receiver
         webhook_configs:

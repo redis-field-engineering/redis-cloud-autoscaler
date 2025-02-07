@@ -5,7 +5,7 @@
     {
       "status": "firing",
       "labels": {
-        "alertname": "HighMemory",
+        "alertname": "IncreaseMemory",
         "cluster": "c36206.us-east1-2.gcp.cloud.rlrcp.com",
         "db": "12848876",
         "exporter": "redis",
@@ -30,7 +30,7 @@
     {
       "status": "firing",
       "labels": {
-        "alertname": "HighMemory",
+        "alertname": "IncreaseMemory",
         "cluster": "c36206.us-east1-2.gcp.cloud.rlrcp.com",
         "db": "12848876",
         "exporter": "redis",
@@ -55,7 +55,7 @@
   ],
   "groupLabels": {},
   "commonLabels": {
-    "alertname": "HighMemory",
+    "alertname": "IncreaseMemory",
     "cluster": "c36206.us-east1-2.gcp.cloud.rlrcp.com",
     "db": "12848876",
     "exporter": "redis",

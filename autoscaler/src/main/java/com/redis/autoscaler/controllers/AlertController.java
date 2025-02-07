@@ -63,11 +63,11 @@ public class AlertController {
 
             // 1. Extract alert type and dbId
             String dbId = alert.getLabels().getDbId();
-            AlertName alertName = alert.getLabels().getAlertName();
+            RuleType ruleType = alert.getLabels().getRuleType();
 
             if(taskMap.containsKey(dbId)){
                 LOG.info("Scaling task already in progress for dbId: {}", dbId);
-                silencerService.silenceAlert(alert.getLabels().getInstance(), alertName, SILENCE_DURATION);
+                silencerService.silenceAlert(alert.getLabels().getInstance(), ruleType, SILENCE_DURATION);
                 continue; // move onto next alert
             }
 
@@ -76,14 +76,14 @@ public class AlertController {
             if(pendingTaskOption.isPresent() && pendingTaskOption.get().getCurrentStatus() == TaskStatus.processingInProgress){
                 LOG.info("Scaling task already in progress for dbId: {}", dbId);
                 taskMap.put(dbId, pendingTaskOption.get());
-                silencerService.silenceAlert(alert.getLabels().getInstance(), alertName, SILENCE_DURATION);
+                silencerService.silenceAlert(alert.getLabels().getInstance(), ruleType, SILENCE_DURATION);
                 continue; // move onto next alert
             }
 
             // 3. Find Rules associated alert type and DB ID
-            Iterable<Rule> rules = ruleRepository.findByDbIdAndRuleType(dbId, alertName);
+            Iterable<Rule> rules = ruleRepository.findByDbIdAndRuleType(dbId, ruleType);
             if(!rules.iterator().hasNext()){
-                LOG.info("No rule found for dbId: {} and alertName: {} JSON Body: {}", dbId, alertName, jsonBody);
+                LOG.info("No rule found for dbId: {} and alertName: {} JSON Body: {}", dbId, ruleType, jsonBody);
                 continue; // move onto next alert
             }
 
@@ -91,11 +91,11 @@ public class AlertController {
             Rule rule = rules.iterator().next();
             Optional<Task> res = redisCloudDatabaseService.applyRule(rule, dbId);
             if(res.isEmpty()){
-                LOG.info("Failed to apply rule for dbId: {} and alertName: {}", dbId, alertName);
+                LOG.info("Failed to apply rule for dbId: {} and alertName: {}", dbId, ruleType);
                 continue;
             }
 
-            silencerService.silenceAlert(alert.getLabels().getInstance(), alertName, SILENCE_DURATION);
+            silencerService.silenceAlert(alert.getLabels().getInstance(), ruleType, SILENCE_DURATION);
 
 
             // 5. Save task data structure along with other metadata while pending

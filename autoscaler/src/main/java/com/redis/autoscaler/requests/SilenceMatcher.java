@@ -1,7 +1,6 @@
 package com.redis.autoscaler.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redis.autoscaler.documents.AlertName;
 import lombok.Data;
 
 @Data

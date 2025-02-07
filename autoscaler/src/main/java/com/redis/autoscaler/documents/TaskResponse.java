@@ -13,6 +13,7 @@ public class TaskResponse {
     private TaskStatus status;
     private String description;
     private Instant timestamp;
+    private TaskResponse response;
 
 
     public Task toTask(){
@@ -24,7 +25,16 @@ public class TaskResponse {
         taskDocument.setInitialTimeStamp(this.timestamp);
         taskDocument.setCurrentStatus(this.status);
         taskDocument.setLastObservedTimestamp(this.timestamp);
+        taskDocument.setResponse(this.response);
         return taskDocument;
+    }
+
+    @Data
+    public static class Response{
+        private int resourceId;
+        private int additionalResourceId;
+        private String error;
+        private String additionalInfo;
     }
 
 }

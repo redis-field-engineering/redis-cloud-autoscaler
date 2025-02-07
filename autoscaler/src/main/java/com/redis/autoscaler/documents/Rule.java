@@ -1,7 +1,5 @@
 package com.redis.autoscaler.documents;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.redis.om.spring.annotations.Document;
 import com.redis.om.spring.annotations.Indexed;
 import lombok.Data;
@@ -9,13 +7,6 @@ import org.springframework.data.annotation.Id;
 
 @Document
 @Data
-//@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "ruleType", visible = true)
-//@JsonSubTypes(
-//        {
-//                @JsonSubTypes.Type(value = HighMemoryRule.class, name = "HighMemory"),
-//                @JsonSubTypes.Type(value = LowMemoryRule.class, name = "LowMemory")
-//        }
-//)
 public class Rule {
     @Indexed
     protected String dbId;
@@ -25,7 +16,7 @@ public class Rule {
     protected String ruleId;
 
     @Indexed
-    protected AlertName ruleType;
+    protected RuleType ruleType;
 
     @Indexed
     protected ScaleType scaleType;
@@ -42,7 +33,7 @@ public class Rule {
 
 
     public boolean isValid(){
-        if(this.ruleType == AlertName.HighMemory){
+        if(this.ruleType == RuleType.IncreaseMemory){
             if(scaleType == ScaleType.Deterministic || scaleType == ScaleType.Step){
                 if(scaleValue > scaleCeiling){
                     return false;
@@ -57,7 +48,7 @@ public class Rule {
             }
         }
 
-        if(this.ruleType == AlertName.LowMemory){
+        if(this.ruleType == RuleType.DecreaseMemory){
             if(scaleType == ScaleType.Deterministic){
                 if(scaleValue < scaleFloor){
                     return false;
@@ -79,25 +70,4 @@ public class Rule {
         double epsilon = 1e-9; // Small tolerance for floating-point precision
         return Math.abs(compValue % 0.1) < epsilon;
     }
-
-//    public boolean isRuleValid(){
-//        if(ruleType == AlertName.HighMemory){
-//            if(scaleType == ScaleType.Deterministic || scaleType == ScaleType.Step){
-//                if(scaleValue > scaleCeiling){
-//                    return false;
-//                }
-//            }
-//        }
-//
-//        if (ruleType == AlertName.LowMemory){
-//            if(scaleType == ScaleType.Deterministic){
-//                if(scaleValue < scaleFloor){
-//                    return false;
-//                }
-//            }
-//        }
-//
-//        return true;
-//
-//    }
 }

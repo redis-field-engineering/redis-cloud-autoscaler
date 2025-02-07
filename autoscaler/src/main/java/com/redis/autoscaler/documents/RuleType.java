@@ -2,17 +2,17 @@ package com.redis.autoscaler.documents;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum AlertName {
-    HighMemory("HighMemory"),
-    LowMemory("LowMemory"),
-    HighLatency("HighLatency"),
-    LowLatency("LowLatency"),
-    HighThroughput("HighThroughput"),
-    LowThroughput("LowThroughput");
+public enum RuleType {
+    IncreaseMemory("IncreaseMemory"),
+    DecreaseMemory("DecreaseMemory"),
+    IncreaseShards("IncreaseShards"),
+    DecreaseShards("DecreaseShards"),
+    IncreaseThroughput("IncreaseThroughput"),
+    DecreaseThroughput("DecreaseThroughput");
 
     private final String value;
 
-    AlertName(String alertName) {
+    RuleType(String alertName) {
         this.value = alertName;
     }
 

@@ -1,9 +1,8 @@
 package com.redis.autoscaler.controllers;
 
-import com.redis.autoscaler.documents.AlertName;
+import com.redis.autoscaler.documents.RuleType;
 import com.redis.autoscaler.documents.RuleRepository;
 import com.redis.autoscaler.documents.Rule;
-import com.redis.autoscaler.documents.ScaleType;
 import org.slf4j.Logger;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -26,7 +25,7 @@ public class RulesController {
     public HttpEntity<Rule> createRule(@RequestBody Rule rule) {
         LOG.info("Received request to create rule: {}", rule);
 
-        if(rule.getRuleType() == AlertName.HighMemory || rule.getRuleType() == AlertName.LowMemory) {
+        if(rule.getRuleType() == RuleType.IncreaseMemory || rule.getRuleType() == RuleType.DecreaseMemory) {
             if(!rule.isValid()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             }

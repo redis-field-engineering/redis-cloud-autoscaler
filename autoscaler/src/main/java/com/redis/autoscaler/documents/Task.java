@@ -20,4 +20,5 @@ public class Task {
     @Indexed private Instant initialTimeStamp;
     @Indexed private Instant lastObservedTimestamp;
     private ScaleRequest scaleRequest;
+    private TaskResponse Response;
 }

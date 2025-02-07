@@ -2,7 +2,7 @@ package com.redis.autoscaler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.redis.autoscaler.documents.AlertName;
+import com.redis.autoscaler.documents.RuleType;
 import com.redis.autoscaler.documents.AlertWebhook;
 import com.redis.autoscaler.documents.Rule;
 import com.redis.om.spring.client.RedisModulesClient;
@@ -40,7 +40,7 @@ class AutoscalerApplicationTests {
 		// read resources/samplePayload.json into string
 		ClassLoader classLoader = getClass().getClassLoader();
 
-		String filePath = Objects.requireNonNull(classLoader.getResource("webhooks/HighMemory.json")).getPath();
+		String filePath = Objects.requireNonNull(classLoader.getResource("webhooks/IncreaseMemory.json")).getPath();
 		String jsonContent = Files.readString(Path.of(filePath));
 
 		Assert.notNull(jsonContent, "jsonContent is null");
@@ -48,7 +48,7 @@ class AutoscalerApplicationTests {
 		AlertWebhook webhook = objectMapper.readValue(jsonContent, AlertWebhook.class);
 
 		Assert.notNull(webhook, "webhook is null");
-		Assert.isTrue(webhook.getCommonLabels().getAlertName() == AlertName.HighMemory, "commonLabels is not HighMemory");
+		Assert.isTrue(webhook.getCommonLabels().getRuleType() == RuleType.IncreaseMemory, "commonLabels is not IncreaseMemory");
 	}
 
 	@Test
@@ -58,7 +58,6 @@ class AutoscalerApplicationTests {
 		String filePath = Objects.requireNonNull(classLoader.getResource("rules/DeterministicMemoryUpRule.json")).getPath();
 		String jsonContent = Files.readString(Path.of(filePath));
 		Rule rule = objectMapper.readValue(jsonContent, Rule.class);
-		Assert.isTrue(rule.getRuleType() == AlertName.HighMemory, "ruleType is not HighMemory");
-//		Assert.isTrue(rule instanceof HighMemoryRule, "rule is not HighMemoryRule");
+		Assert.isTrue(rule.getRuleType() == RuleType.IncreaseMemory, "ruleType is not IncreaseMemory");
 	}
 }

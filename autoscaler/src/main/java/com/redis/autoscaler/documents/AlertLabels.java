@@ -9,7 +9,7 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AlertLabels {
     @JsonProperty("alertname")
-    private AlertName alertName;
+    private RuleType ruleType;
     private String cluster;
     @JsonProperty("db")
     private String dbId;

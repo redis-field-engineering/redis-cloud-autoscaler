@@ -1,6 +1,6 @@
 {
   "dbId": "1",
-  "ruleType": "LowMemory",
+  "ruleType": "DecreaseMemory",
   "scaleType": "Deterministic",
   "scaleValue": 0.25,
   "scaleFloor": 0.25

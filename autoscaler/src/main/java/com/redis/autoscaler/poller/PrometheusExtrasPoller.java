@@ -38,10 +38,12 @@ public class PrometheusExtrasPoller {
     public void pollDbConfiguredThroughput(){
         try{
             List<Single<List<String>>> dbIdsRes = entityStream.of(Rule.class).groupBy().reduce(ReducerFunction.TOLIST, Rule$.DB_ID).toList(String.class);
-//            LOG.info(dbIds.toString());
+            if(dbIdsRes.size() == 0 || ((List<String>)dbIdsRes.get(0).get(0)).size() == 0){
+                return;
+            }
+
             List<String> dbIds = (List<String>)dbIdsRes.get(0).get(0);
             for (String dbId: dbIds){
-//                String dbId = (String)dbIdTup.get(0);
                 RedisCloudDatabase db = redisCloudDatabaseService.getDatabase(dbId);
                 prometheusMetrics.addConfiguredThroughput(dbId, db.getPrivateEndpoint(), db.getThroughputMeasurement().getValue());
             }
