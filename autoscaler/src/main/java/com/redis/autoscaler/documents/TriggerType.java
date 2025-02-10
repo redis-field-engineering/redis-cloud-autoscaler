@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum TriggerType {
     Webhook("webhook"),
-    Schedule("schedule");
+    Scheduled("scheduled");
 
     private final String value;
     TriggerType(String value){

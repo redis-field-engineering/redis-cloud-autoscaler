@@ -3,26 +3,36 @@ package com.redis.autoscaler.controllers;
 import com.redis.autoscaler.documents.RuleType;
 import com.redis.autoscaler.documents.RuleRepository;
 import com.redis.autoscaler.documents.Rule;
+import com.redis.autoscaler.documents.TriggerType;
+import com.redis.autoscaler.services.RedisCloudDatabaseService;
+import com.redis.autoscaler.services.SchedulingService;
 import org.slf4j.Logger;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.support.CronExpression;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.util.Objects;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/rules")
 public class RulesController {
     private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(RulesController.class);
+    private final RedisCloudDatabaseService redisCloudDatabaseService;
     private final RuleRepository ruleRepository;
+    private final SchedulingService schedulingService;
 
-    public RulesController(RuleRepository ruleRepository) {
+    public RulesController(RedisCloudDatabaseService redisCloudDatabaseService, RuleRepository ruleRepository, SchedulingService schedulingService) {
+        this.redisCloudDatabaseService = redisCloudDatabaseService;
         this.ruleRepository = ruleRepository;
+        this.schedulingService = schedulingService;
     }
 
     @PostMapping
-    public HttpEntity<Rule> createRule(@RequestBody Rule rule) {
+    public HttpEntity<Object> createRule(@RequestBody Rule rule) {
         LOG.info("Received request to create rule: {}", rule);
 
         if(rule.getRuleType() == RuleType.IncreaseMemory || rule.getRuleType() == RuleType.DecreaseMemory) {
@@ -32,11 +42,30 @@ public class RulesController {
         }
 
         LOG.info("Attempting to create rule: {}", rule);
-        if(ruleRepository.findByDbIdAndRuleType(rule.getDbId(), rule.getRuleType()).iterator().hasNext()) {
+        if(ruleRepository.findByDbIdAndRuleTypeAndTriggerType(rule.getDbId(), rule.getRuleType(), rule.getTriggerType()).iterator().hasNext()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
-        ruleRepository.save(rule);
+        if(rule.getTriggerType() == TriggerType.Scheduled){
+            try {
+                CronExpression.parse(rule.getTriggerValue());
+                ruleRepository.save(rule);
+                schedulingService.scheduleTask(rule.getRuleId(), rule.getTriggerValue(), () -> {
+                    try {
+                        redisCloudDatabaseService.applyRule(rule);
+                    } catch (IOException | InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } catch (Exception e) {
+                LOG.error("Invalid cron expression: {} {}", rule.getTriggerValue(), e.toString());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid cron expression: " + rule.getTriggerValue());
+            }
+        }
+        else{
+            ruleRepository.save(rule);
+        }
+
         return ResponseEntity.of(Optional.of(rule));
     }
 
@@ -56,6 +85,10 @@ public class RulesController {
         Rule rule = ruleRepository.findById(ruleId).orElse(null);
         if(rule == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        if(rule.getTriggerValue() != null && rule.getTriggerType() == TriggerType.Scheduled) {
+            schedulingService.cancelTask(rule.getRuleId());
         }
 
         ruleRepository.delete(rule);

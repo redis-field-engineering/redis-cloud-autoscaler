@@ -21,6 +21,11 @@ public class Rule {
     @Indexed
     protected ScaleType scaleType;
 
+    @Indexed
+    protected TriggerType triggerType;
+
+    protected String triggerValue;
+
     protected double scaleValue;
     protected double scaleCeiling;
     protected double scaleFloor;

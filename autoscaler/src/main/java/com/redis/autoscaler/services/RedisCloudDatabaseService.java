@@ -53,7 +53,8 @@ public class RedisCloudDatabaseService {
         return objectMapper.readValue(response.body(), RedisCloudDatabase.class);
     }
 
-    public Optional<Task> applyRule(Rule rule, String dbId) throws IOException, InterruptedException {
+    public Optional<Task> applyRule(Rule rule) throws IOException, InterruptedException {
+        String dbId = rule.getDbId();
         // Apply the rule to the database
         RedisCloudDatabase db = getDatabase(dbId);
 
@@ -92,68 +93,12 @@ public class RedisCloudDatabaseService {
 
                 scaleRequest = ScaleRequest.builder().throughputMeasurement(new ThroughputMeasurement(ThroughputMeasurement.ThroughputMeasureBy.OperationsPerSecond, newThroughput)).build();
             }
-            case IncreaseShards, DecreaseShards -> {
-                if(db.getThroughputMeasurement().getBy() != ThroughputMeasurement.ThroughputMeasureBy.NumberOfShards && rule.getScaleType() != ScaleType.Deterministic){
-                    LOG.info("DB: {} ID: {} is not measured by number of shards, cannot apply shard rule: {}",db.getName(), dbId, rule.getRuleType());
-                    return Optional.empty();
-                }
-
-                long newShardCount = getNewShardCount(rule, db);
-                if(newShardCount == db.getThroughputMeasurement().getValue()){
-                    LOG.info("DB: {} ID: {} is already at the min/max shard count: {}",db.getName(), dbId, newShardCount);
-                    return Optional.empty();
-                }
-
-                scaleRequest = ScaleRequest.builder().throughputMeasurement(new ThroughputMeasurement(ThroughputMeasurement.ThroughputMeasureBy.NumberOfShards, newShardCount)).build();
-            }
             default -> {
                 return Optional.empty();
             }
         }
 
         return Optional.of(scaleDatabase(dbId, scaleRequest));
-    }
-
-    private static long getNewShardCount(Rule rule, RedisCloudDatabase db){
-        long newShards;
-        long currentShards = db.getThroughputMeasurement().getValue();
-        if(rule.getRuleType() == RuleType.IncreaseShards){
-            switch (rule.getScaleType()){
-                case Step -> {
-                    newShards = currentShards + (long)rule.getScaleValue();
-                }
-                case Exponential -> {
-                    newShards = (long)Math.ceil(currentShards * rule.getScaleValue());
-                }
-                case Deterministic -> {
-                    newShards = (long)rule.getScaleValue();
-                }
-
-                default -> throw new IllegalStateException("Unexpected value: " + rule.getScaleType());
-            }
-
-            newShards = Math.min(newShards, (long)rule.getScaleCeiling());
-        } else if(rule.getRuleType() == RuleType.DecreaseShards){
-            switch (rule.getScaleType()){
-                case Step -> {
-                    newShards = currentShards - (long)rule.getScaleValue();
-                }
-                case Exponential -> {
-                    newShards = (long)Math.ceil(db.getThroughputMeasurement().getValue() * rule.getScaleValue());
-                }
-                case Deterministic -> {
-                    newShards = (long)rule.getScaleValue();
-                }
-
-                default -> throw new IllegalStateException("Unexpected value: " + rule.getScaleType());
-            }
-
-            newShards = (long)Math.max(newShards, rule.getScaleFloor());
-        } else {
-            throw new IllegalStateException("Unexpected value: " + rule.getRuleType());
-        }
-
-        return newShards;
     }
 
     private static long getNewThroughput(Rule rule, RedisCloudDatabase db){

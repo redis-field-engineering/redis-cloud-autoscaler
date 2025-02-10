@@ -81,7 +81,7 @@ public class AlertController {
             }
 
             // 3. Find Rules associated alert type and DB ID
-            Iterable<Rule> rules = ruleRepository.findByDbIdAndRuleType(dbId, ruleType);
+            Iterable<Rule> rules = ruleRepository.findByDbIdAndRuleTypeAndTriggerType(dbId, ruleType, TriggerType.Webhook);
             if(!rules.iterator().hasNext()){
                 LOG.info("No rule found for dbId: {} and alertName: {} JSON Body: {}", dbId, ruleType, jsonBody);
                 continue; // move onto next alert
@@ -89,7 +89,7 @@ public class AlertController {
 
             // 4. If not, run scaling
             Rule rule = rules.iterator().next();
-            Optional<Task> res = redisCloudDatabaseService.applyRule(rule, dbId);
+            Optional<Task> res = redisCloudDatabaseService.applyRule(rule);
             if(res.isEmpty()){
                 LOG.info("Failed to apply rule for dbId: {} and alertName: {}", dbId, ruleType);
                 continue;

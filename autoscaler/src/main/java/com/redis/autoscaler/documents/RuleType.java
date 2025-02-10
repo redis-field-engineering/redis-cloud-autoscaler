@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum RuleType {
     IncreaseMemory("IncreaseMemory"),
     DecreaseMemory("DecreaseMemory"),
-    IncreaseShards("IncreaseShards"),
-    DecreaseShards("DecreaseShards"),
     IncreaseThroughput("IncreaseThroughput"),
     DecreaseThroughput("DecreaseThroughput");
 
