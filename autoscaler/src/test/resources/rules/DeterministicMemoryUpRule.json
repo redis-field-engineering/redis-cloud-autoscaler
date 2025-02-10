@@ -3,5 +3,6 @@
   "ruleType": "IncreaseMemory",
   "scaleType": "Deterministic",
   "scaleValue": 0.5,
-  "scaleCeiling": 0.5
+  "scaleCeiling": 0.5,
+  "triggerType": "webhook"
 }

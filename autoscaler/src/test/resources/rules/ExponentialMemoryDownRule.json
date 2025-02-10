@@ -3,5 +3,6 @@
   "ruleType": "DecreaseMemory",
   "scaleType": "Exponential",
   "scaleValue": 0.5,
-  "scaleFloor": 0.2
+  "scaleFloor": 0.2,
+  "triggerType": "webhook"
 }

@@ -3,5 +3,6 @@
   "ruleType": "IncreaseMemory",
   "scaleType": "Step",
   "scaleValue": 0.5,
-  "scaleCeiling": 1
+  "scaleCeiling": 1,
+  "triggerType": "webhook"
 }
