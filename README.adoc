@@ -1,0 +1,120 @@
+= Redis Cloud Autoscaler
+:linkattrs:
+:name:              Redis Cloud Autoscaler
+:project-owner:     redis-field-engineering
+:project-name:      redis-cloud-autoscaler
+:project-group:     com.redis
+:project-version:   0.0.1
+:project-url:       https://github.com/{project-owner}/{project-name}
+:repo-name:         redis-cloud-autoscaler
+:imagesdir:        .github/images
+
+The Redis Cloud Autoscaler helps you to scale your Redis Cloud instances to new Memory / throughput limits based on current usage or a pre-set schedule.
+
+== Architecture Overview
+
+image:autoscaler-architecture.png[Redis Cloud Autoscaler Architecture]
+
+The Redis Cloud Autoscaler is and application designed to run in your own environment, it will scale your Redis Cloud in / out based one of two trigger types
+
+1. **Prometheus Alerts** You can configure your Prometheus Alert Manager ot send webhook alerts to the Redis Cloud Autoscaler, the Autoscaler's rule-based scaling system will then scale your Redis Cloud instance out / in based off of the alerts it receives.
+2. **Scheduled Scaling** You can configure the Redis Cloud Autoscaler to scale your Redis Cloud instance out / in based on a schedule you define.
+
+=== Defining Rules
+
+The Redis Cloud Autoscaler uses a JSON-based rule system to define how a given Redis Cloud Database should be scaled.
+
+[options="header"]
+|===
+| Field Name | Type | Required | Description
+| `dbId` | String | Yes | The Redis Cloud Database ID.
+| `ruleType` | String | Yes | This is the type of rule - `IncreaseMemory`, `DecreaseMemory`, `IncreaseThroughput`, `DecreaseThroughput`.
+| `scaleType` | String | Yes | The way the new scale will be calculated - `Deterministic`, `Step`, `Exponential`.
+| `triggerType` | String | Yes | The way a scaling operation will be triggered - `webhook`, `scheduled`.
+| `triggerValue` | cron | No | Value that triggers the scaling action - currently only pertinent for scheduled triggers, the cron expression to schedule the scaling operation.
+| `scaleValue` | double | Yes | The value used to scale the Redis Cloud instance in / out. For `Exponential` scaleType, this is the value to multiply by. For memory rules this is in gb, for throughput rules this is in ops/sec.
+| `scaleCeiling` |  | No | The limit to which the Redis Cloud instance can be scaled out to.
+| `scaleFloor` |  | No | The minimum limit to which the Redis Cloud instance can be scaled in to.
+|===
+
+
+==== Sample Rules:
+
+Rule to increase memory to 1gb for a Redis Cloud Database with ID `123456`:
+[source,json]
+----
+{
+  "dbId": "123456",
+  "ruleType": "IncreaseMemory",
+  "scaleType": "Deterministic",
+  "scaleValue": 1,
+  "scaleCeiling": 1,
+  "triggerType":"webhook"
+}
+----
+
+Rule to decrease memory to 0.5gb for a Redis Cloud Database with ID `123456`:
+[source,json]
+----
+{
+  "dbId": "123456",
+  "ruleType": "DecreaseMemory",
+  "scaleType": "Deterministic",
+  "scaleValue": 0.5,
+  "scaleFloor": 0.5,
+  "triggerType":"webhook"
+}
+----
+
+Rule to double the throughput for a Redis Cloud Database with ID `123456`:
+[source,json]
+----
+{
+  "dbId": "123456",
+  "ruleType": "IncreaseThroughput",
+  "scaleType": "Exponential",
+  "scaleValue": 2,
+  "scaleCeiling": 100000,
+  "triggerType":"webhook"
+}
+----
+
+Rule to halve the throughput for a Redis Cloud Database with ID `123456`:
+[source,json]
+----
+{
+  "dbId": "123456",
+  "ruleType": "DecreaseThroughput",
+  "scaleType": "Exponential",
+  "scaleValue": 0.5,
+  "scaleFloor": 1000,
+  "triggerType":"webhook"
+}
+----
+
+Rule to Scale Redis to 50gb at 7:00am every weekday:
+[source,json]
+----
+{
+  "dbId": "123456",
+  "ruleType": "IncreaseMemory",
+  "scaleType": "Deterministic",
+  "scaleValue": 50,
+  "scaleCeiling": 50,
+  "triggerType":"scheduled",
+  "triggerValue":"0 7 * * 1-5"
+}
+----
+
+Rule To Scale Redis up 3 GB:
+[source,json]
+----
+{
+  "dbId": "123456",
+  "ruleType": "IncreaseMemory",
+  "scaleType": "Step",
+  "scaleValue": 3,
+  "scaleCeiling": 50,
+  "triggerType":"webhook"
+}
+----
