@@ -213,7 +213,7 @@ resource "google_compute_instance" "autoscale-vm-prometheus" {
         - name: RedisAlerts
           rules:
             - alert: IncreaseMemory
-              expr: sum by (bdb, instance, db) (redis_server_used_memory) / sum by (bdb, instance, db) (redis_server_maxmemory) * 100 > 80
+              expr: sum by (instance, db) (redis_server_used_memory) / sum by (instance, db) (redis_server_maxmemory) * 100 > 80
               for: 1m
               labels:
                 severity: warning
@@ -221,7 +221,7 @@ resource "google_compute_instance" "autoscale-vm-prometheus" {
                 summary: "High Redis Memory Usage"
                 description: "Redis memory usage is high"
             - alert: DecreaseMemory
-              expr: sum by (bdb, instance, db) (redis_server_used_memory) / sum by (bdb, instance, db) (redis_server_maxmemory) * 100 < 20
+              expr: sum by (instance, db) (redis_server_used_memory) / sum by (instance, db) (redis_server_maxmemory) * 100 < 20
               for: 1m
               labels:
                 severity: warning
