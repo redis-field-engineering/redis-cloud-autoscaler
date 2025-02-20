@@ -51,7 +51,5 @@ enforce {
     rule(enforcer.rules.ForceDependencies) { r ->
         r.dependencies.addAll "org.jetbrains:annotations:17.0.0"
     }
-    rule(enforcer.rules.DependencyConvergence) { r ->
-        r.enabled = false
-    }
+
 }

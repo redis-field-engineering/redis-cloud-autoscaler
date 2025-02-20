@@ -38,4 +38,8 @@ override.tf.json
 terraform.rc
 
 out
-
+.gradle
+.settings
+.project
+.classpath
+build

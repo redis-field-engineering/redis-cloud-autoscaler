@@ -25,10 +25,7 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testAnnotationProcessor 'com.redis.om:redis-om-spring:0.9.8'
 	testAnnotationProcessor 'org.projectlombok:lombok'
-	testImplementation ('org.springframework.boot:spring-boot-starter-test')
-	{
-		exclude group: "com.vaadin.external.google", module: "android-json"
-	}
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
