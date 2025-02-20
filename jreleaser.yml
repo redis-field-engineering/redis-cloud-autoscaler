@@ -1,0 +1,211 @@
+project:
+  name: redis-cloud-autoscaler
+  description: Prometheus driven scaler for Redis Cloud
+  longDescription: |
+    Application that allows for rule-driven scaling of a Redis Cloud Database
+    based off of Prometheus Alert Manager webhooks and Crons
+  links:
+    homepage: https://github.com/redis-field-engineering/redis-cloud-autoscaler
+    documentation: https://github.com/redis-field-engineering/redis-cloud-autoscaler
+  authors:
+    - Steve Lorello
+  license: MIT
+  inceptionYear: 2025
+  stereotype: WEB
+  vendor: Redis
+  icons:
+    - url: https://raw.githubusercontent.com/redis-field-engineering/redis-cloud-autoscaler/main/.github/images/redis-logo.png
+      width: 256
+      height: 256
+  languages:
+    java:
+      groupId: com.redis
+      version: 17
+      multiProject: true
+      mainClass: com.redis.autoscaler.AutoscalerApplication
+  tags: ['autoscaling', 'redis', 'prometheus', 'java', 'cloud']
+
+platform:
+  replacements:
+    aarch_64: aarch64
+
+release:
+  github:
+    overwrite: true
+    sign: true
+    issues:
+      enabled: true
+    changelog:
+      formatted: ALWAYS
+      preset: conventional-commits
+      contributors:
+        format: '- {{contributorName}}{{#contributorUsernameAsLink}} ({{.}}){{/contributorUsernameAsLink}}'
+      contentTemplate: 'src/jreleaser/changelog.tpl'
+      extraProperties:
+        categorizeScopes: true
+      labelers:
+        - label: 'i18n'
+          title: 'regex:^(?:i18n(?:\(.*\))?!?):\s.*'
+          order: 120
+        - label: 'dependencies'
+          title: 'regex:^(?:deps(?:\(.*\))?!?):\s.*'
+          order: 130
+        - label: 'allcontributors1'
+          title: 'regex:^docs: update .all-contributorsrc.*'
+          order: -1
+        - label: 'allcontributors2'
+          title: 'regex:^docs: update CONTRIBUTORS.md.*'
+          order: -2
+      categories:
+        - title: '🌐 Translation'
+          key: 'i18n'
+          order: 70
+          labels:
+            - 'i18n'
+        - title: '⚙️  Dependencies'
+          key: 'dependencies'
+          order: 80
+          labels:
+            - 'dependencies'
+        - title: 'allcontributors'
+          order: 59
+          labels:
+            - 'allcontributors1'
+            - 'allcontributors2'
+      hide:
+        categories:
+          - 'merge'
+          - 'allcontributors'
+        contributors:
+          - 'GitHub'
+          - 'allcontributors'
+          - 'dependabot'
+      replacers:
+        - search: 'i18n: '
+        - search: 'deps: '
+
+signing:
+  active: ALWAYS
+  armored: true
+
+deploy:
+  maven:
+    nexus2:
+      maven-central:
+        active: ALWAYS
+        url: https://s01.oss.sonatype.org/service/local
+        snapshotUrl: https://s01.oss.sonatype.org/content/repositories/snapshots
+        closeRepository: true
+        releaseRepository: true
+        stagingRepositories:
+          - build/repos/local/release
+
+announce:
+  slack:
+    active: RELEASE
+    channel: '#field-engineering-announcements'
+    message: '🧨 Redis Cloud Autoscaler {{projectVersion}} has been released! {{releaseNotesUrl}}'
+
+assemble:
+  jlink:
+    redis-cloud-autoscaler-standalone:
+      active: ALWAYS
+      java:
+        version: 21
+      imageName: '{{distributionName}}-{{projectEffectiveVersion}}'
+      executable: redis-cloud-autoscaler
+      fileSets:
+        - input: '.'
+          includes:
+            - LICENSE
+      jdeps:
+        multiRelease: base
+        ignoreMissingDeps: true
+        targets:
+          - 'autoscaler/redis-cloud-autoscaler/build/libs/redis-cloud-autoscaler-{{projectVersion}}.jar'
+      additionalModuleNames:
+        - 'java.security.sasl'
+        - 'java.security.jgss'
+        - 'jdk.crypto.cryptoki'
+        - 'jdk.crypto.ec'
+        - 'jdk.localedata'
+        - 'jdk.net'
+        - 'jdk.security.auth'
+        - 'jdk.security.jgss'
+      targetJdks:
+        - path: '{{jdkPathPrefix}}/zulu21Osx/{{jdkFilePrefix}}-macosx_x64/zulu-21.jdk/Contents/Home'
+          platform: 'osx-x86_64'
+        - path: '{{jdkPathPrefix}}/zulu21OsxArm/{{jdkFilePrefix}}-macosx_aarch64/zulu-21.jdk/Contents/Home'
+          platform: 'osx-aarch_64'
+        - path: '{{jdkPathPrefix}}/zulu21Linux/{{jdkFilePrefix}}-linux_x64'
+          platform: 'linux-x86_64'
+        - path: '{{jdkPathPrefix}}/zulu21LinuxArm/{{jdkFilePrefix}}-linux_aarch64'
+          platform: 'linux-aarch_64'
+        - path: '{{jdkPathPrefix}}/zulu21LinuxMusl/{{jdkFilePrefix}}-linux_musl_x64'
+          platform: 'linux_musl-x86_64'
+        - path: '{{jdkPathPrefix}}/zulu21LinuxMuslArm/{{jdkFilePrefix}}-linux_musl_aarch64'
+          platform: 'linux_musl-aarch_64'
+        - path: '{{jdkPathPrefix}}/zulu21Windows/{{jdkFilePrefix}}-win_x64'
+          platform: 'windows-x86_64'
+        - path: '{{jdkPathPrefix}}/zulu21WindowsArm/{{jdkFilePrefix}}-win_aarch64'
+          platform: 'windows-aarch_64'
+      mainJar:
+        path: 'autoscaler/redis-cloud-autoscaler/build/libs/redis-cloud-autoscaler-{{projectVersion}}.jar'
+      jars:
+        - pattern: 'autoscaler/redis-cloud-autoscaler/build/dependencies/flat/*.jar'
+
+distributions:
+  redis-cloud-autoscaler:
+    docker:
+      active: ALWAYS
+      continueOnError: true
+      repository:
+        active: ALWAYS
+        commitMessage: 'redis-cloud-autoscaler {{tagName}}'
+      registries:
+        - serverName: DEFAULT
+          repositoryName: redis-cloud-autoscaler
+      labels:
+        'org.opencontainers.image.title': 'redis-cloud-autoscaler'
+      imageNames:
+        - 'redis-cloud-autoscaler/{{distributionName}}:{{tagName}}'
+        - 'redis-cloud-autoscaler/{{distributionName}}:latest'
+      buildx:
+        enabled: true
+        platforms:
+          - 'linux/amd64'
+          - 'linux/arm64'
+    scoop:
+      active: ALWAYS
+      continueOnError: true
+      repository:
+        active: RELEASE
+        name: 'scoop'
+        commitMessage: 'redis-cloud-autoscaler {{tagName}}'
+    artifacts:
+      - path: plugins/{{distributionName}}/build/distributions/{{distributionName}}-{{projectVersion}}.zip
+        transform: '{{distributionName}}/{{distributionName}}-{{projectEffectiveVersion}}.zip'
+        extraProperties:
+          skipSpec: true
+      - path: plugins/{{distributionName}}/build/distributions/{{distributionName}}-{{projectVersion}}.tar
+        transform: '{{distributionName}}/{{distributionName}}-{{projectEffectiveVersion}}.tar'
+        extraProperties:
+          skipFlatpak: true
+
+  redis-cloud-autoscaler-standalone:
+    brew:
+      active: ALWAYS
+      continueOnError: true
+      formulaName: redis-cloud-autoscaler
+      multiPlatform: true
+      repository:
+        active: RELEASE
+        commitMessage: 'redis-cloud-autoscaler {{tagName}}'
+
+files:
+  artifacts:
+    - path: VERSION
+      extraProperties:
+        skipChecksum: true
+        skipSigning: true
+        skipSbom: true
