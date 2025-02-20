@@ -118,7 +118,7 @@ distributions:
         enabled: true
         platforms:
           - 'linux/amd64'
-          - 'linux/arm64'\
+          - 'linux/arm64'
 
 files:
   artifacts:
