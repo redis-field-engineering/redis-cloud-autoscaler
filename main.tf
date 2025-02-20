@@ -7,32 +7,165 @@ terraform {
   }
 }
 
+provider "rediscloud" {
+    secret_key = var.redis_cloud_api_key
+    api_key = var.redis_cloud_account_key
+    # Configuration options
+}
+
 provider "google" {
     project = var.gcp_project
     region  = "us-east1"  
 }
 
-data "rediscloud_subscription" "autoscale-sub" {
-    name = "Autoscaling Subscription"  
+
+resource "google_compute_network" "autoscale_test_vpc" {
+    name="autoscale-test-vpc"
+    auto_create_subnetworks = false
 }
 
-data "rediscloud_database" "autoscale-db" {
-    subscription_id = data.rediscloud_subscription.autoscale-sub.id
-    name = "autoscale-database"
+resource "google_compute_subnetwork" "autoscale_test_subnet" {
+    name          = "autoscale-test-subnet"
+    region        = "us-east1"
+    ip_cidr_range = "10.0.0.0/24"
+    network       = google_compute_network.autoscale_test_vpc.id
+    private_ip_google_access = true
+
 }
 
-data "google_compute_network" "autoscale_test_vpc" {
-  name="autoscale-test-vpc"
+
+resource "google_compute_firewall" "autoscale_allow_ssh" {
+    name    = "autoscale-allow-ssh"
+    network = google_compute_network.autoscale_test_vpc.id
+
+    allow {
+        protocol = "tcp"
+        ports    = ["22","80","443","8001", "8443", "8070", "8071", "8080", "9090", "9091", "9093", "9100", "9115", "9443", "10000-19999"]
+    }
+
+    source_ranges = ["0.0.0.0/0"]
 }
 
-data "google_compute_subnetwork" "autoscale_test_subnet" {
-  name          = "autoscale-test-subnet"
-  region        = "us-east1"
+resource "google_compute_firewall" "autoscale_allow_icmp" {
+    name    = "autoscale-allow-icmp"
+    network = google_compute_network.autoscale_test_vpc.id
+
+    allow {
+        protocol = "icmp"
+    }
+
+    source_ranges = ["0.0.0.0/0"]
 }
+
+
+resource "google_compute_firewall" "autoscale_allow_dns" {
+    name    = "autoscale-allow-dns"
+    network = google_compute_network.autoscale_test_vpc.id
+
+    allow {
+        protocol = "udp"
+        ports    = ["53","5353"]
+    }
+
+    source_ranges = ["0.0.0.0/0"]
+
+}
+
+resource "google_compute_firewall" "autoscale_allow_egress" {
+    name    = "autoscale-allow-egress"
+    network = google_compute_network.autoscale_test_vpc.id
+
+    allow {
+        protocol = "all"
+    }
+
+    direction     = "EGRESS"
+    destination_ranges = ["0.0.0.0/0"]
+}
+
+
+data "rediscloud_payment_method" "card"{
+    card_type = "Visa"
+    last_four_numbers = var.last_four_digits
+}
+
+resource "rediscloud_subscription" "autoscaling_sub" {
+    name = var.sub_name
+    payment_method_id = data.rediscloud_payment_method.card.id
+    memory_storage = "ram"
+
+    cloud_provider {
+        provider = "GCP"
+        region {
+            region = "us-east1"
+            multiple_availability_zones = false
+            networking_deployment_cidr = "10.0.1.0/24"
+        }
+    }
+
+    maintenance_windows {
+        mode = "automatic"
+    }
+
+    creation_plan {
+        memory_limit_in_gb = 5
+        quantity = 3
+        replication = false
+        throughput_measurement_by = "operations-per-second"
+        throughput_measurement_value = 25000
+    }
+}
+
+resource "rediscloud_subscription_peering" "autoscale-sub-vpc-peering" {
+    subscription_id = rediscloud_subscription.autoscaling_sub.id
+    provider_name="GCP"
+    gcp_project_id = var.gcp_project
+    gcp_network_name = google_compute_network.autoscale_test_vpc.name
+}
+
+resource "google_compute_network_peering" "autoscale-gcp-vpc-peering" {
+    name = "autoscale-gcp-vpc-peering"
+    network = google_compute_network.autoscale_test_vpc.id
+    peer_network = "https://www.googleapis.com/compute/v1/projects/${rediscloud_subscription_peering.autoscale-sub-vpc-peering.gcp_redis_project_id}/global/networks/${rediscloud_subscription_peering.autoscale-sub-vpc-peering.gcp_redis_network_name}"
+}
+
+resource "rediscloud_subscription_database" "autoscale-database" {
+    subscription_id = rediscloud_subscription.autoscaling_sub.id
+    name = var.db_name
+    throughput_measurement_by = "operations-per-second"
+    throughput_measurement_value = 1000
+    memory_limit_in_gb = 0.5
+    modules = [
+        {
+            "name" : "RedisJSON"
+        },
+        {
+            "name":"RediSearch"
+        }
+    ]
+}
+
+#data "rediscloud_subscription" "autoscale-sub" {
+#    name = var.sub_name
+#}
+
+#data "rediscloud_database" "autoscale-db" {
+#    subscription_id = rediscloud_subscription.autoscaling_sub.id
+#    name = "autoscale-database"
+#}
+#
+#data "google_compute_network" "autoscale_test_vpc" {
+#  name="autoscale-test-vpc"
+#}
+
+#data "google_compute_subnetwork" "autoscale_test_subnet" {
+#  name          = "autoscale-test-subnet"
+#  region        = "us-east1"
+#}
 
 # Extract the hostname portion of the private_endpoint
 locals {
-  private_endpoint_host = join("", slice(split(":", data.rediscloud_database.autoscale-db.private_endpoint), 0, 1))
+  private_endpoint_host = join("", slice(split(":", rediscloud_subscription_database.autoscale-database.private_endpoint), 0, 1))
 }
 
 resource "google_compute_instance" "autoscaler-vm"{
@@ -47,8 +180,10 @@ resource "google_compute_instance" "autoscaler-vm"{
     }
 
     network_interface {
-        network = data.google_compute_network.autoscale_test_vpc.id
-        subnetwork = data.google_compute_subnetwork.autoscale_test_subnet.id
+        network = google_compute_network.autoscale_test_vpc.id
+#        network = data.google_compute_network.autoscale_test_vpc.id
+#        subnetwork = data.google_compute_subnetwork.autoscale_test_subnet.id
+        subnetwork = google_compute_subnetwork.autoscale_test_subnet.id
         access_config {          
         }
     }
@@ -57,7 +192,7 @@ resource "google_compute_instance" "autoscaler-vm"{
 resource "null_resource" "build_app" {
     depends_on = [ google_compute_instance.autoscaler-vm ]
     provisioner "local-exec" {
-        command = "./autoscaler/gradlew -p autoscaler clean bootjar"
+        command = "./gradlew clean bootjar"
     }
 
     connection {
@@ -68,7 +203,7 @@ resource "null_resource" "build_app" {
     }
 
     provisioner "file" {
-        source = "./autoscaler/build/libs/autoscaler-0.0.1-SNAPSHOT.jar"
+        source = "./autoscaler/redis-cloud-autoscaler/build/libs/redis-cloud-autoscaler.jar"
         destination = "autoscaler.jar"      
     }
 
@@ -93,11 +228,11 @@ resource "null_resource" "build_app" {
             "echo 'After=network.target' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
             "echo '' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
             "echo '[Service]' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
-            "echo 'Environment=REDIS_HOST_AND_PORT=${data.rediscloud_database.autoscale-db.private_endpoint}' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
-            "echo 'Environment=REDIS_PASSWORD=${data.rediscloud_database.autoscale-db.password}' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
+            "echo 'Environment=REDIS_HOST_AND_PORT=${rediscloud_subscription_database.autoscale-database.private_endpoint}' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
+            "echo 'Environment=REDIS_PASSWORD=${rediscloud_subscription_database.autoscale-database.password}' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
             "echo 'Environment=REDIS_CLOUD_API_KEY=${var.redis_cloud_api_key}' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
             "echo 'Environment=REDIS_CLOUD_ACCOUNT_KEY=${var.redis_cloud_account_key}' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
-            "echo 'Environment=REDIS_CLOUD_SUBSCRIPTION_ID=${data.rediscloud_subscription.autoscale-sub.id}' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
+            "echo 'Environment=REDIS_CLOUD_SUBSCRIPTION_ID=${rediscloud_subscription_database.autoscale-database.id}' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
             "echo 'Environment=ALERT_MANAGER_HOST=${google_compute_instance.autoscale-vm-prometheus.network_interface[0].access_config[0].nat_ip}' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
             "echo 'Environment=ALERT_MANAGER_PORT=9093' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
             "echo 'ExecStart=/usr/bin/java -jar /usr/local/bin/autoscaler.jar' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
@@ -139,8 +274,8 @@ resource "google_compute_instance" "autoscale-vm-prometheus" {
     }
 
     network_interface {
-        network = data.google_compute_network.autoscale_test_vpc.id
-        subnetwork = data.google_compute_subnetwork.autoscale_test_subnet.id
+        network = google_compute_network.autoscale_test_vpc.id
+        subnetwork = google_compute_subnetwork.autoscale_test_subnet.id
         access_config {          
         }
     }

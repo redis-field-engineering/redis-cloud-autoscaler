@@ -25,6 +25,21 @@ variable "redis_cloud_account_key" {
 variable "redis_cloud_api_key" {
   type      = string
   sensitive = true
-  description = "The Redis Cloud API key"  
-  
+  description = "The Redis Cloud API key"
+}
+
+variable "sub_name" {
+    type      = string
+    description = "The name of the subscription"
+}
+
+variable "db_name" {
+    type      = string
+    description = "The name of the database"
+}
+
+variable "last_four_digits" {
+  type      = string
+  sensitive = true
+  description = "The last four credit card digits"
 }

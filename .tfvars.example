@@ -1,0 +1,8 @@
+gcp_project = "YOUR_GCP_PROJECT_ID"
+dns-zone-name="DNS_ZONE_NAME"
+subdomain="FULLY_QUALIFIED_DNS_SUBDOMAIN"
+redis_cloud_account_key = "REDIS_CLOUD_ACCOUNT_KEY"
+redis_cloud_api_key = "REDIS_CLOUD_API_KEY"
+sub_name = "NAME_FOR_YOUR_SUBSCRIPTION"
+db_name = "NAME_FOR_YOUR_DATABASE"
+last_four_digits="LAST_FOUR_DIGITS_OF_YOUR_CREDIT_CARD"
