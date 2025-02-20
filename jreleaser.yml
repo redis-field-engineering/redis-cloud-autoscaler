@@ -40,7 +40,7 @@ release:
       preset: conventional-commits
       contributors:
         format: '- {{contributorName}}{{#contributorUsernameAsLink}} ({{.}}){{/contributorUsernameAsLink}}'
-      contentTemplate: 'src/jreleaser/changelog.tpl'
+      contentTemplate: 'changelog.tpl'
       extraProperties:
         categorizeScopes: true
       labelers:
