@@ -102,15 +102,13 @@ distributions:
         transform: '{{distributionName}}/{{distributionName}}-{{projectEffectiveVersion}}.jar'
     docker:
       active: ALWAYS
-      continueOnError: true
       repository:
-        active: ALWAYS
-        commitMessage: 'redis-cloud-autoscaler {{tagName}}'
+        active: NEVER
       registries:
-        - serverName: DEFAULT
-          repositoryName: redis-cloud-autoscaler
+        - serverName: github
+          server: ghcr.io
       labels:
-        'org.opencontainers.image.title': 'redis-cloud-autoscaler'
+        'org.opencontainers.image.title': '{{distributionName}}'
       imageNames:
         - '{{repoOwner}}/{{distributionName}}:{{tagName}}'
         - '{{repoOwner}}/{{distributionName}}:latest'
