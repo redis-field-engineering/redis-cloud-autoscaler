@@ -20,6 +20,22 @@ The Redis Cloud Autoscaler is and application designed to run in your own enviro
 1. **Prometheus Alerts** You can configure your Prometheus Alert Manager ot send webhook alerts to the Redis Cloud Autoscaler, the Autoscaler's rule-based scaling system will then scale your Redis Cloud instance out / in based off of the alerts it receives.
 2. **Scheduled Scaling** You can configure the Redis Cloud Autoscaler to scale your Redis Cloud instance out / in based on a schedule you define.
 
+== Configuration
+
+=== Redis Cloud Autoscaler Config Items
+
+[options="header"]
+|===
+| Name | Description
+| REDIS_HOST_AND_PORT | The private endpoint of the Redis Cloud subscription database.
+| REDIS_PASSWORD | The password for accessing the Redis Cloud database.
+| REDIS_CLOUD_API_KEY | The API key for interacting with Redis Cloud services.
+| REDIS_CLOUD_ACCOUNT_KEY | The account key for authenticating with Redis Cloud.
+| REDIS_CLOUD_SUBSCRIPTION_ID | The ID of the Redis Cloud subscription.
+| ALERT_MANAGER_HOST | The public IP address of the Prometheus Alert Manager instance.
+| ALERT_MANAGER_PORT | The port on which Alert Manager is running (default: 9093).
+|===
+
 === Defining Rules
 
 The Redis Cloud Autoscaler uses a JSON-based rule system to define how a given Redis Cloud Database should be scaled.
