@@ -134,3 +134,24 @@ Rule To Scale Redis up 3 GB:
   "triggerType":"webhook"
 }
 ----
+
+== Availability
+
+=== Docker
+The Redis Cloud Autoscaler is available as a Docker image, you can pull the image from GitHub's Docker registry:
+
+[source,shell]
+----
+docker pull ghcr.io/redis-field-engineering/redis-cloud-autoscaler:latest
+----
+
+=== Jars
+You can also download the JAR file from the https://github.com/redis-field-engineering/redis-cloud-autoscaler/releases/latest[GitHub Releases Page]
+
+=== Source
+You can of course also build the whole thing from source by cloning this repo and running:
+
+[source,shell]
+----
+./gradlew build
+----
