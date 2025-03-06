@@ -1,0 +1,9 @@
+global:
+  resolve_timeout: 1m
+route:
+    receiver: webhook-receiver
+    repeat_interval: 1m
+receivers:
+  - name: webhook-receiver
+    webhook_configs:
+      - url: 'http://autoscaler:8080/alerts'

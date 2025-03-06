@@ -1,0 +1,40 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+rule_files:
+    - /etc/prometheus/alert.rules
+alerting:
+  alertmanagers:
+    - static_configs:
+      - targets:
+        # Alertmanager's default port is 9093
+        - localhost:9093
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'rediscloud'
+    scrape_interval: 30s
+    scrape_timeout: 30s
+    metrics_path: /
+    scheme: https
+    static_configs:
+      - targets: ['${REDIS_CLOUD_INTERNAL_ENDPOINT}:8070']
+
+  - job_name: 'rediscloud-v2'
+    scrape_interval: 30s
+    scrape_timeout: 30s
+    metrics_path: /v2
+    scheme: https
+    static_configs:
+      - targets: ['${REDIS_CLOUD_INTERNAL_ENDPOINT}:8070']
+
+  - job_name: 'autoscaler-prometheus-actuator'
+    scrape_interval: 30s
+    scrape_timeout: 30s
+    metrics_path: /actuator/prometheus
+    scheme: http
+    static_configs:
+      - targets: ['${REDIS_CLOUD_AUTOSCALER_HOST}:8080']

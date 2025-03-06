@@ -47,7 +47,7 @@ public class RedisCloudDatabaseService {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
         if(response.statusCode() != 200){
-            throw new RuntimeException("Failed to fetch database info");
+            throw new RuntimeException(String.format("Failed to fetch database info on %s", uri.toString()));
         }
 
         return objectMapper.readValue(response.body(), RedisCloudDatabase.class);
@@ -210,7 +210,7 @@ public class RedisCloudDatabaseService {
             }
 
             else {
-                throw new HttpResponseException(response.statusCode(), String.format("Failed to scale database %s", response.body()));
+                throw new HttpResponseException(response.statusCode(), String.format("Failed to scale database %s %s", dbId, response.body()));
             }
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
