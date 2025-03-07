@@ -15,7 +15,7 @@ provider "rediscloud" {
 
 provider "google" {
     project = var.gcp_project
-    region  = "us-east1"  
+    region  = var.gcloud_region  
 }
 
 
@@ -26,7 +26,7 @@ resource "google_compute_network" "autoscale_test_vpc" {
 
 resource "google_compute_subnetwork" "autoscale_test_subnet" {
     name          = "autoscale-test-subnet"
-    region        = "us-east1"
+    region        = var.gcloud_region
     ip_cidr_range = "10.0.0.0/24"
     network       = google_compute_network.autoscale_test_vpc.id
     private_ip_google_access = true
@@ -97,7 +97,7 @@ resource "rediscloud_subscription" "autoscaling_sub" {
     cloud_provider {
         provider = "GCP"
         region {
-            region = "us-east1"
+            region = var.gcloud_region
             multiple_availability_zones = false
             networking_deployment_cidr = "10.0.1.0/24"
         }
@@ -145,24 +145,6 @@ resource "rediscloud_subscription_database" "autoscale-database" {
     ]
 }
 
-#data "rediscloud_subscription" "autoscale-sub" {
-#    name = var.sub_name
-#}
-
-#data "rediscloud_database" "autoscale-db" {
-#    subscription_id = rediscloud_subscription.autoscaling_sub.id
-#    name = "autoscale-database"
-#}
-#
-#data "google_compute_network" "autoscale_test_vpc" {
-#  name="autoscale-test-vpc"
-#}
-
-#data "google_compute_subnetwork" "autoscale_test_subnet" {
-#  name          = "autoscale-test-subnet"
-#  region        = "us-east1"
-#}
-
 # Extract the hostname portion of the private_endpoint
 locals {
   private_endpoint_host = join("", slice(split(":", rediscloud_subscription_database.autoscale-database.private_endpoint), 0, 1))
@@ -171,7 +153,7 @@ locals {
 resource "google_compute_instance" "autoscaler-vm"{
     name = "autoscaler-vm"
     machine_type = "n1-standard-1"
-    zone = "us-east1-b"
+    zone = var.gcloud_zone
     boot_disk {
         initialize_params {
             image = "ubuntu-2004-focal-v20240731"
@@ -181,8 +163,6 @@ resource "google_compute_instance" "autoscaler-vm"{
 
     network_interface {
         network = google_compute_network.autoscale_test_vpc.id
-#        network = data.google_compute_network.autoscale_test_vpc.id
-#        subnetwork = data.google_compute_subnetwork.autoscale_test_subnet.id
         subnetwork = google_compute_subnetwork.autoscale_test_subnet.id
         access_config {          
         }
@@ -203,7 +183,7 @@ resource "null_resource" "build_app" {
     }
 
     provisioner "file" {
-        source = "./autoscaler/redis-cloud-autoscaler/build/libs/redis-cloud-autoscaler-0.0.2.jar"
+        source = "./autoscaler/redis-cloud-autoscaler/build/libs/redis-cloud-autoscaler.jar"
         destination = "autoscaler.jar"      
     }
 
@@ -232,7 +212,7 @@ resource "null_resource" "build_app" {
             "echo 'Environment=REDIS_PASSWORD=${rediscloud_subscription_database.autoscale-database.password}' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
             "echo 'Environment=REDIS_CLOUD_API_KEY=${var.redis_cloud_api_key}' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
             "echo 'Environment=REDIS_CLOUD_ACCOUNT_KEY=${var.redis_cloud_account_key}' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
-            "echo 'Environment=REDIS_CLOUD_SUBSCRIPTION_ID=${rediscloud_subscription.autoscaling_sub.id}' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
+            "echo 'Environment=REDIS_CLOUD_SUBSCRIPTION_ID=${rediscloud_subscription_database.autoscale-database.id}' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
             "echo 'Environment=ALERT_MANAGER_HOST=${google_compute_instance.autoscale-vm-prometheus.network_interface[0].access_config[0].nat_ip}' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
             "echo 'Environment=ALERT_MANAGER_PORT=9093' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
             "echo 'ExecStart=/usr/bin/java -jar /usr/local/bin/autoscaler.jar' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
@@ -265,7 +245,7 @@ resource "google_dns_record_set" "autoscaler_dns" {
 resource "google_compute_instance" "autoscale-vm-prometheus" {
     name = "autoscale-vm-prometheus"
     machine_type = "n1-standard-1"
-    zone = "us-east1-b"
+    zone = var.gcloud_zone
     boot_disk {
         initialize_params {
             image = "ubuntu-2004-focal-v20240731"

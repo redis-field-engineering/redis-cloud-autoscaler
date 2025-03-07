@@ -43,3 +43,5 @@ out
 .project
 .classpath
 build
+*.terraform
+.gradle

@@ -1,3 +1,0 @@
-services:
-  autoscaler:
-    ghcr.io/redis-field-engineering/redis-cloud-autoscaler

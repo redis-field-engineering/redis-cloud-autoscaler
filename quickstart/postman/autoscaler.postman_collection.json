@@ -1,0 +1,498 @@
+{
+	"info": {
+		"_postman_id": "48ca389f-b4b0-4ddd-a48f-7dc40b13728b",
+		"name": "autoscaler",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "18465949"
+	},
+	"item": [
+		{
+			"name": "throughputRules",
+			"item": [
+				{
+					"name": "IncreaseThroughputDeterministic",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dbId\": \"{{db_id}}\",\n  \"ruleType\": \"IncreaseThroughput\",\n  \"scaleType\": \"Deterministic\",\n  \"scaleValue\": 10000,\n  \"scaleCeiling\": 10000,\n  \"triggerType\":\"webhook\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host_name}}:8080/rules",
+							"protocol": "http",
+							"host": [
+								"{{host_name}}"
+							],
+							"port": "8080",
+							"path": [
+								"rules"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DecreaseThroughputDeterministic",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dbId\": \"{{db_id}}\",\n  \"ruleType\": \"DecreaseThroughput\",\n  \"scaleType\": \"Deterministic\",\n  \"scaleValue\": 1000,\n  \"scaleCeiling\": 1000,\n  \"triggerType\":\"webhook\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host_name}}:8080/rules",
+							"protocol": "http",
+							"host": [
+								"{{host_name}}"
+							],
+							"port": "8080",
+							"path": [
+								"rules"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DecreaseThroughputStep",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dbId\": \"{{db_id}}\",\n  \"ruleType\": \"DecreaseThroughput\",\n  \"scaleType\": \"Step\",\n  \"scaleValue\": 1000,\n  \"scaleCeiling\": 1000,\n  \"triggerType\":\"webhook\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host_name}}:8080/rules",
+							"protocol": "http",
+							"host": [
+								"{{host_name}}"
+							],
+							"port": "8080",
+							"path": [
+								"rules"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "IncreaseThroughputStep",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dbId\": \"{{db_id}}\",\n  \"ruleType\": \"IncreaseThroughput\",\n  \"scaleType\": \"Step\",\n  \"scaleValue\": 1000,\n  \"scaleCeiling\": 10000,\n  \"triggerType\":\"webhook\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host_name}}:8080/rules",
+							"protocol": "http",
+							"host": [
+								"{{host_name}}"
+							],
+							"port": "8080",
+							"path": [
+								"rules"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "IncreaseThroughputExponential",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dbId\": \"{{db_id}}\",\n  \"ruleType\": \"IncreaseThroughput\",\n  \"scaleType\": \"Exponential\",\n  \"scaleValue\": 2,\n  \"scaleCeiling\": 10000,\n  \"triggerType\":\"webhook\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host_name}}:8080/rules",
+							"protocol": "http",
+							"host": [
+								"{{host_name}}"
+							],
+							"port": "8080",
+							"path": [
+								"rules"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DecreaseThroughputExponential",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dbId\": \"{{db_id}}\",\n  \"ruleType\": \"DecreaseThroughput\",\n  \"scaleType\": \"Exponential\",\n  \"scaleValue\": 0.5,\n  \"scaleCeiling\": 10000,\n  \"triggerType\":\"webhook\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host_name}}:8080/rules",
+							"protocol": "http",
+							"host": [
+								"{{host_name}}"
+							],
+							"port": "8080",
+							"path": [
+								"rules"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "IncreaseThroughputDeterministicCron",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dbId\": \"{{db_id}}\",\n  \"ruleType\": \"IncreaseThroughput\",\n  \"scaleType\": \"Deterministic\",\n  \"scaleValue\": 10000,\n  \"scaleCeiling\": 10000,\n  \"triggerType\":\"scheduled\",\n  \"triggerValue\":\"0 0,5,10,15,20,25,30,35,40,45,50,55 * * * ?\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host_name}}:8080/rules",
+							"protocol": "http",
+							"host": [
+								"{{host_name}}"
+							],
+							"port": "8080",
+							"path": [
+								"rules"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DecreaseThroughputDeterminsiticCron",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dbId\": \"{{db_id}}\",\n  \"ruleType\": \"DecreaseThroughput\",\n  \"scaleType\": \"Deterministic\",\n  \"scaleValue\": 1000,\n  \"scaleCeiling\": 1000,\n  \"triggerType\":\"scheduled\",\n  \"triggerValue\":\"0 2,7,12,17,22,27,32,37,42,47,52,57 * * * ?\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host_name}}:8080/rules",
+							"protocol": "http",
+							"host": [
+								"{{host_name}}"
+							],
+							"port": "8080",
+							"path": [
+								"rules"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "MemoryRules",
+			"item": [
+				{
+					"name": "DecreaseMemoryDeterministic",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dbId\": \"{{db_id}}\",\n  \"ruleType\": \"DecreaseMemory\",\n  \"scaleType\": \"Deterministic\",\n  \"scaleValue\": 0.2,\n  \"scaleFloor\": 0.2,\n  \"triggerType\":\"webhook\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host_name}}:8080/rules",
+							"protocol": "http",
+							"host": [
+								"{{host_name}}"
+							],
+							"port": "8080",
+							"path": [
+								"rules"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "IncreaseMemoryDeterministic",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dbId\": \"{{db_id}}\",\n  \"ruleType\": \"IncreaseMemory\",\n  \"scaleType\": \"Deterministic\",\n  \"scaleValue\": 1,\n  \"scaleCeiling\": 1,\n  \"triggerType\":\"webhook\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host_name}}:8080/rules",
+							"protocol": "http",
+							"host": [
+								"{{host_name}}"
+							],
+							"port": "8080",
+							"path": [
+								"rules"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "IncreaseMemoryStep",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dbId\": \"{{db_id}}\",\n  \"ruleType\": \"IncreaseMemory\",\n  \"scaleType\": \"Step\",\n  \"scaleValue\": 0.5,\n  \"scaleCeiling\": 2\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://autoscaler.autoscale.demo.redislabs.com:8080/rules",
+							"protocol": "http",
+							"host": [
+								"autoscaler",
+								"autoscale",
+								"demo",
+								"redislabs",
+								"com"
+							],
+							"port": "8080",
+							"path": [
+								"rules"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DecreaseMemoryStep",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dbId\": \"{{db_id}}\",\n  \"ruleType\": \"DecreaseMemory\",\n  \"scaleType\": \"Step\",\n  \"scaleValue\": 0.5,\n  \"scaleFloor\": 0.2\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://autoscaler.autoscale.demo.redislabs.com:8080/rules",
+							"protocol": "http",
+							"host": [
+								"autoscaler",
+								"autoscale",
+								"demo",
+								"redislabs",
+								"com"
+							],
+							"port": "8080",
+							"path": [
+								"rules"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "IncreaseMemoryExponential",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dbId\": \"{{db_id}}\",\n  \"ruleType\": \"IncreaseMemory\",\n  \"scaleType\": \"Exponential\",\n  \"scaleValue\": 2,\n  \"scaleCeiling\": 2\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://autoscaler.autoscale.demo.redislabs.com:8080/rules",
+							"protocol": "http",
+							"host": [
+								"autoscaler",
+								"autoscale",
+								"demo",
+								"redislabs",
+								"com"
+							],
+							"port": "8080",
+							"path": [
+								"rules"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DecreaseMemoryExponential",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dbId\": \"{{db_id}}\",\n  \"ruleType\": \"DecreaseMemory\",\n  \"scaleType\": \"Exponential\",\n  \"scaleValue\": 0.5,\n  \"scaleFloor\": 0.2\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://autoscaler.autoscale.demo.redislabs.com:8080/rules",
+							"protocol": "http",
+							"host": [
+								"autoscaler",
+								"autoscale",
+								"demo",
+								"redislabs",
+								"com"
+							],
+							"port": "8080",
+							"path": [
+								"rules"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "admin",
+			"item": [
+				{
+					"name": "DeleteRule",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://{{host_name}}:8080/rules/01JNP449HA64WXJ73M7VDXGVMY",
+							"protocol": "http",
+							"host": [
+								"{{host_name}}"
+							],
+							"port": "8080",
+							"path": [
+								"rules",
+								"01JNP449HA64WXJ73M7VDXGVMY"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetRules",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{host_name}}:8080/rules",
+							"protocol": "http",
+							"host": [
+								"{{host_name}}"
+							],
+							"port": "8080",
+							"path": [
+								"rules"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetPendingTasks",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{host_name}}:8080/tasks/pending?dbId={{db_id}}",
+							"protocol": "http",
+							"host": [
+								"{{host_name}}"
+							],
+							"port": "8080",
+							"path": [
+								"tasks",
+								"pending"
+							],
+							"query": [
+								{
+									"key": "dbId",
+									"value": "{{db_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

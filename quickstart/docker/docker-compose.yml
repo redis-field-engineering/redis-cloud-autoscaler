@@ -1,0 +1,36 @@
+services:
+  autoscaler:    
+    image: ghcr.io/redis-field-engineering/redis-cloud-autoscaler:latest
+    container_name: autoscaler
+    env_file:
+      - .env
+    ports:
+      - 8080:8080
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    links:
+      - autoscaler
+    env_file:
+      - .env
+    volumes:
+      - ./prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    ports:
+      - 9093:9093
+    command: 
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    links:
+      - alertmanager
+    env_file:
+      - .env
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/alert.rules:/etc/prometheus/alert.rules
+      - ./prometheus/alertmanager.yml:/etc/prometheus/alertmanager.yml
+    command: 
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - 9090:9090
