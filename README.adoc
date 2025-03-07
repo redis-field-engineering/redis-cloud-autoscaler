@@ -155,3 +155,7 @@ You can of course also build the whole thing from source by cloning this repo an
 ----
 ./gradlew build
 ----
+
+== Quickstart
+
+To get started with the Redis Cloud Autoscaler, you can follow the steps in the `quickstart` folder.
