@@ -1,6 +1,5 @@
 package com.redis.autoscaler.controllers;
 
-import com.redis.autoscaler.documents.RuleType;
 import com.redis.autoscaler.documents.RuleRepository;
 import com.redis.autoscaler.documents.Rule;
 import com.redis.autoscaler.documents.TriggerType;
@@ -14,7 +13,6 @@ import org.springframework.scheduling.support.CronExpression;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -31,14 +29,19 @@ public class RulesController {
         this.schedulingService = schedulingService;
     }
 
+    @GetMapping("/numDatabases")
+    public HttpEntity<Integer> getNumDatabases() throws IOException, InterruptedException {
+        return ResponseEntity.ok(redisCloudDatabaseService.getDatabaseCount());
+    }
+
+
     @PostMapping
     public HttpEntity<Object> createRule(@RequestBody Rule rule) {
         LOG.info("Received request to create rule: {}", rule);
 
-        if(rule.getRuleType() == RuleType.IncreaseMemory || rule.getRuleType() == RuleType.DecreaseMemory) {
-            if(!rule.isValid()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-            }
+        String ruleValidityError = rule.getValidationError();
+        if(!ruleValidityError.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ruleValidityError);
         }
 
         LOG.info("Attempting to create rule: {}", rule);

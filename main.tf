@@ -183,7 +183,7 @@ resource "null_resource" "build_app" {
     }
 
     provisioner "file" {
-        source = "./autoscaler/redis-cloud-autoscaler/build/libs/redis-cloud-autoscaler.jar"
+        source = "./autoscaler/redis-cloud-autoscaler/build/libs/redis-cloud-autoscaler-0.0.2.jar"
         destination = "autoscaler.jar"      
     }
 
@@ -212,7 +212,7 @@ resource "null_resource" "build_app" {
             "echo 'Environment=REDIS_PASSWORD=${rediscloud_subscription_database.autoscale-database.password}' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
             "echo 'Environment=REDIS_CLOUD_API_KEY=${var.redis_cloud_api_key}' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
             "echo 'Environment=REDIS_CLOUD_ACCOUNT_KEY=${var.redis_cloud_account_key}' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
-            "echo 'Environment=REDIS_CLOUD_SUBSCRIPTION_ID=${rediscloud_subscription_database.autoscale-database.id}' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
+            "echo 'Environment=REDIS_CLOUD_SUBSCRIPTION_ID=${rediscloud_subscription.autoscaling_sub.id}' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
             "echo 'Environment=ALERT_MANAGER_HOST=${google_compute_instance.autoscale-vm-prometheus.network_interface[0].access_config[0].nat_ip}' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
             "echo 'Environment=ALERT_MANAGER_PORT=9093' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",
             "echo 'ExecStart=/usr/bin/java -jar /usr/local/bin/autoscaler.jar' | sudo tee -a /etc/systemd/system/autoscaler.service > /dev/null",

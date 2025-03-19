@@ -36,6 +36,27 @@ public class RedisCloudDatabaseService {
         this.config = config;
     }
 
+    public int getDatabaseCount() throws IOException, InterruptedException {
+        URI uri = URI.create(String.format("%s/subscriptions/%s/databases", Constants.REDIS_CLOUD_URI_BASE, config.getSubscriptionId()));
+        HttpRequest request = httpClientConfig.requestBuilder()
+                .uri(uri)
+                .GET().build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if(response.statusCode() != 200){
+            throw new RuntimeException(String.format("Failed to fetch database count on %s", uri.toString()));
+        }
+
+        DatabaseListResponse databaseListResponse = objectMapper.readValue(response.body(), DatabaseListResponse.class);
+        if(databaseListResponse.getSubscription().length == 0){
+            LOG.warn("No subscriptions found for subscription id: {}", config.getSubscriptionId());
+            return 0;
+        }
+
+        return databaseListResponse.getSubscription()[0].getDatabases().length;
+    }
+
     public RedisCloudDatabase getDatabase(String dbId) throws IOException, InterruptedException {
 
         URI uri = URI.create(String.format("%s/subscriptions/%s/databases/%s", Constants.REDIS_CLOUD_URI_BASE, config.getSubscriptionId(), dbId));
@@ -62,6 +83,13 @@ public class RedisCloudDatabaseService {
             LOG.info("Database {} not found", dbId);
             return Optional.empty();
         }
+
+        int numDatabases = getDatabaseCount();
+        if(numDatabases > 1){
+            LOG.warn("Database count for subscription {} is greater than 1, using autoscaler is not supported, skipping rule: {}", config.getSubscriptionId(), rule);
+            return Optional.empty();
+        }
+
 
         ScaleRequest scaleRequest;
         switch (rule.getRuleType()){
