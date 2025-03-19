@@ -183,7 +183,7 @@ resource "null_resource" "build_app" {
     }
 
     provisioner "file" {
-        source = "./autoscaler/redis-cloud-autoscaler/build/libs/redis-cloud-autoscaler-0.0.2.jar"
+        source = "./autoscaler/redis-cloud-autoscaler/build/libs/redis-cloud-autoscaler-0.0.3.jar"
         destination = "autoscaler.jar"      
     }
 
