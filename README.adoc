@@ -95,19 +95,6 @@ Rule to double the throughput for a Redis Cloud Database with ID `123456`:
 }
 ----
 
-Rule to halve the throughput for a Redis Cloud Database with ID `123456`:
-[source,json]
-----
-{
-  "dbId": "123456",
-  "ruleType": "DecreaseThroughput",
-  "scaleType": "Exponential",
-  "scaleValue": 0.5,
-  "scaleFloor": 1000,
-  "triggerType":"webhook"
-}
-----
-
 Rule to Scale Redis to 50gb at 7:00am every weekday:
 [source,json]
 ----
@@ -134,6 +121,12 @@ Rule To Scale Redis up 3 GB:
   "triggerType":"webhook"
 }
 ----
+
+== Limitations
+
+* The Redis Cloud Autoscaler is currently only available for Redis Cloud Pro Subscriptions
+* The Redis Cloud Autoscaler will only operate on Subscriptions with as single database
+* The Redis Cloud Autoscaler will only scale a database down deterministically (`Deterministic` is the only valid setting for `DecreaseMemory` and `DecreaseThroughput`)
 
 == Availability
 
