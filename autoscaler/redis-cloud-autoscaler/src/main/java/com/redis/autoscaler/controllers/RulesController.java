@@ -5,6 +5,7 @@ import com.redis.autoscaler.documents.Rule;
 import com.redis.autoscaler.documents.TriggerType;
 import com.redis.autoscaler.services.RedisCloudDatabaseService;
 import com.redis.autoscaler.services.SchedulingService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -36,7 +37,7 @@ public class RulesController {
 
 
     @PostMapping
-    public HttpEntity<Object> createRule(@RequestBody Rule rule) {
+    public HttpEntity<Object> createRule(@Valid @RequestBody Rule rule) {
         LOG.info("Received request to create rule: {}", rule);
 
         String ruleValidityError = rule.getValidationError();

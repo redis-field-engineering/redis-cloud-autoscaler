@@ -1,7 +1,9 @@
 package com.redis.autoscaler.documents;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redis.om.spring.annotations.Document;
 import com.redis.om.spring.annotations.Indexed;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.springframework.data.annotation.Id;
@@ -12,31 +14,41 @@ public class Rule {
     private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(Rule.class);
 
     @Indexed
-    protected String dbId;
-
-    @Indexed
     @Id
-    protected String ruleId;
+    private String ruleId;
+
+    @JsonProperty(required = true)
+    @Indexed
+    private String dbId;
 
     @Indexed
-    protected RuleType ruleType;
+    @JsonProperty(required = true)
+    @NotNull(message = "ruleType is required")
+    private RuleType ruleType;
 
     @Indexed
-    protected ScaleType scaleType;
+    @JsonProperty(required = true)
+    @NotNull(message = "scaleType is required")
+    private ScaleType scaleType;
 
     @Indexed
-    protected TriggerType triggerType;
+    @JsonProperty(required = true)
+    @NotNull(message = "triggerType is required")
+    private TriggerType triggerType;
 
-    protected String triggerValue;
+    private String triggerValue;
 
-    protected double scaleValue;
-    protected double scaleCeiling;
-    protected double scaleFloor;
+    @JsonProperty(required = true)
+    @NotNull(message = "scaleValue is required")
+    private double scaleValue;
+
+    private double scaleCeiling;
+    private double scaleFloor;
 
     @Override
     public String toString(){
-        return String.format("Rule: dbId=%s, ruleId=%s, ruleType=%s, scaleType=%s, scaleValue=%f, scaleCeiling=%f, scaleFloor=%f",
-                dbId, ruleId, ruleType, scaleType, scaleValue, scaleCeiling, scaleFloor);
+        return String.format("Rule: dbId=%s, ruleId=%s, ruleType=%s, scaleType=%s, scaleValue=%f, scaleCeiling=%f, scaleFloor=%f, triggerType=%s, triggerValue=%s",
+                dbId, ruleId, ruleType, scaleType, scaleValue, scaleCeiling, scaleFloor, triggerType, triggerValue);
     }
 
 
@@ -92,7 +104,7 @@ public class Rule {
         return "";
     }
 
-    protected boolean isMultipleOfPointOne() {
+    private boolean isMultipleOfPointOne() {
         LOG.info("Validating scale value: {}", scaleValue);
         double compValue = scaleValue - Math.floor(scaleValue);
         double epsilon = 1e-9; // Small tolerance for floating-point precision
