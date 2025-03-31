@@ -105,6 +105,8 @@ public class RedisCloudDatabaseService {
                     return Optional.empty();
                 }
 
+                newDatasetSizeInGb = roundUpToNearestTenth(newDatasetSizeInGb); // round up to nearest 0.1gb for Redis Cloud
+
                 scaleRequest = ScaleRequest.builder().datasetSizeInGb(newDatasetSizeInGb).build();
             }
             case IncreaseThroughput, DecreaseThroughput -> {
@@ -196,10 +198,10 @@ public class RedisCloudDatabaseService {
         } else if(rule.getRuleType() == RuleType.DecreaseMemory){
             switch (rule.getScaleType()){
                 case Step -> {
-                    newDatasetSizeInGb = roundUpToNearestTenth(db.getDatasetSizeInGb() - rule.getScaleValue());
+                    newDatasetSizeInGb = db.getDatasetSizeInGb() - rule.getScaleValue();
                 }
                 case Exponential -> {
-                    newDatasetSizeInGb = roundUpToNearestTenth(db.getDatasetSizeInGb() * rule.getScaleValue());
+                    newDatasetSizeInGb = db.getDatasetSizeInGb() * rule.getScaleValue();
                 }
                 case Deterministic -> {
                     newDatasetSizeInGb = rule.getScaleValue();

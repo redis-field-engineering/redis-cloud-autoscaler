@@ -183,7 +183,7 @@ resource "null_resource" "build_app" {
     }
 
     provisioner "file" {
-        source = "./autoscaler/redis-cloud-autoscaler/build/libs/redis-cloud-autoscaler-0.0.3.jar"
+        source = "./autoscaler/redis-cloud-autoscaler/build/libs/redis-cloud-autoscaler-0.0.4.jar"
         destination = "autoscaler.jar"      
     }
 
@@ -235,7 +235,7 @@ resource "null_resource" "build_app" {
 
 resource "google_dns_record_set" "autoscaler_dns" {
     managed_zone = var.dns-zone-name
-    name = "autoscaler.autoscale.${var.subdomain}."
+    name = "autoscaler.${var.subdomain}."
     type = "A"
     ttl = 300
     rrdatas = [google_compute_instance.autoscaler-vm.network_interface[0].access_config[0].nat_ip]  
@@ -418,7 +418,7 @@ resource "google_compute_instance" "autoscale-vm-prometheus" {
 
 resource "google_dns_record_set" "autoscale_prometheus_dns" {
     managed_zone = var.dns-zone-name
-    name = "prometheus.autoscale.${var.subdomain}."
+    name = "prometheus.autoscaler.${var.subdomain}."
     type = "A"
     ttl = 300
     rrdatas = [google_compute_instance.autoscale-vm-prometheus.network_interface[0].access_config[0].nat_ip]  
