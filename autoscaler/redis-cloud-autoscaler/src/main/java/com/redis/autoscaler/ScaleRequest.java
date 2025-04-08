@@ -1,5 +1,6 @@
 package com.redis.autoscaler;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
@@ -10,8 +11,12 @@ import lombok.Setter;
 @Builder
 @Data
 public class ScaleRequest {
+    @Builder.Default
+    @JsonIgnore
+    private boolean isCrdb = false;
     private Double datasetSizeInGb;
     private ThroughputMeasurement throughputMeasurement;
+    private Region[] regions;
 
     @Override
     public String toString(){

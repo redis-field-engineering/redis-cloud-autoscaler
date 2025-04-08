@@ -2,6 +2,7 @@ package com.redis.autoscaler.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.redis.autoscaler.RedisCloudDatabase;
 import com.redis.autoscaler.documents.*;
 import com.redis.autoscaler.services.RedisCloudDatabaseService;
 import com.redis.autoscaler.services.SilencerService;
@@ -64,6 +65,20 @@ public class AlertController {
             // 1. Extract alert type and dbId
             String dbId = alert.getLabels().getDbId();
             RuleType ruleType = alert.getLabels().getRuleType();
+
+            RedisCloudDatabase materializedDb;
+            Optional<RedisCloudDatabase> dbOpt = redisCloudDatabaseService.getDatabase(dbId);
+            if(dbOpt.isEmpty()){
+                // We could not find the db directly from its ID in the CAPI, perhaps it's an A-A database, we only have one of the locals, let's try looking it up via the instance name.
+                dbOpt = redisCloudDatabaseService.getDatabaseByInternalInstanceName(alert.getLabels().getInstance());
+                if(dbOpt.isEmpty()){
+                    LOG.info("No database found for dbId: {} and alertName: {} JSON Body: {}", dbId, ruleType, jsonBody);
+                    continue;
+                }
+
+                materializedDb = dbOpt.get();
+                dbId = String.valueOf(materializedDb.getDatabaseId());
+            }
 
             if(taskMap.containsKey(dbId)){
                 LOG.info("Scaling task already in progress for dbId: {}", dbId);

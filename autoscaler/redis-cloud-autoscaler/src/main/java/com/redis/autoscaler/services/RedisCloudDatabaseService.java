@@ -14,6 +14,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -57,7 +59,48 @@ public class RedisCloudDatabaseService {
         return databaseListResponse.getSubscription()[0].getDatabases().length;
     }
 
-    public RedisCloudDatabase getDatabase(String dbId) throws IOException, InterruptedException {
+    public Optional<RedisCloudDatabase> getDatabaseByInternalInstanceName(String instanceName){
+        try {
+            URI uri = URI.create(String.format("%s/subscriptions/%s/databases", Constants.REDIS_CLOUD_URI_BASE, config.getSubscriptionId()));
+            HttpRequest request = httpClientConfig.requestBuilder()
+                    .uri(uri)
+                    .GET().build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if(response.statusCode() != 200){
+                throw new RuntimeException(String.format("Failed to fetch database count on %s", uri.toString()));
+            }
+
+            DatabaseListResponse databaseListResponse = objectMapper.readValue(response.body(), DatabaseListResponse.class);
+            if(databaseListResponse.getSubscription().length == 0){
+                LOG.warn("No subscriptions found for subscription id: {}", config.getSubscriptionId());
+                return Optional.empty();
+            }
+
+            for (RedisCloudDatabase db : databaseListResponse.getSubscription()[0].getDatabases()) {
+                if(!db.isActiveActiveRedis()){
+                    continue;
+                }
+
+                for(RedisCloudDatabase crdb : db.getCrdbDatabases()){
+                    LOG.info("Checking crdb: {} against instance name: {}", crdb.getPrivateEndpoint(), instanceName);
+                    String internalInstanceName = getInternalUriFromPrivateEndpoint(crdb.getPrivateEndpoint());
+                    LOG.info("Internal instance name: {}", internalInstanceName);
+                    String instanceNameHost = instanceName.split(":")[0];
+                    if(internalInstanceName.equals(instanceNameHost)){
+                        return Optional.of(db);
+                    }
+                }
+            }
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        return Optional.empty();
+    }
+
+
+    public Optional<RedisCloudDatabase> getDatabase(String dbId) throws IOException, InterruptedException {
 
         URI uri = URI.create(String.format("%s/subscriptions/%s/databases/%s", Constants.REDIS_CLOUD_URI_BASE, config.getSubscriptionId(), dbId));
 
@@ -68,21 +111,23 @@ public class RedisCloudDatabaseService {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
         if(response.statusCode() != 200){
-            throw new RuntimeException(String.format("Failed to fetch database info on %s", uri.toString()));
+            return Optional.empty();
         }
 
-        return objectMapper.readValue(response.body(), RedisCloudDatabase.class);
+        return Optional.of(objectMapper.readValue(response.body(), RedisCloudDatabase.class));
     }
 
     public Optional<Task> applyRule(Rule rule) throws IOException, InterruptedException {
         String dbId = rule.getDbId();
         // Apply the rule to the database
-        RedisCloudDatabase db = getDatabase(dbId);
+        Optional<RedisCloudDatabase> dbOpt = getDatabase(dbId);
 
-        if(db == null){
+        if(dbOpt.isEmpty()){
             LOG.info("Database {} not found", dbId);
             return Optional.empty();
         }
+
+        RedisCloudDatabase db = dbOpt.get();
 
         int numDatabases = getDatabaseCount();
         if(numDatabases > 1){
@@ -94,12 +139,24 @@ public class RedisCloudDatabaseService {
         ScaleRequest scaleRequest;
         switch (rule.getRuleType()){
             case IncreaseMemory, DecreaseMemory -> {
+                double currentDatasetSize;
+                if(db.getCrdbDatabases() != null){
+                    currentDatasetSize = db.getCrdbDatabases()[0].getDatasetSizeInGb();
+                } else {
+                    currentDatasetSize = db.getDatasetSizeInGb();
+                }
+
                 // we are at min configured scale, do nothing
-                if(db.getDatasetSizeInGb() <= rule.getScaleFloor()){
-                    LOG.info("DB: {} ID: {} is below the memory scale floor: {}gb",db.getName(), dbId, rule.getScaleFloor());
+                if(rule.getRuleType() == RuleType.DecreaseMemory && currentDatasetSize <= rule.getScaleFloor()){
+                    LOG.info("DB: {} ID: {} is already below the memory scale floor: {}gb",db.getName(), dbId, rule.getScaleFloor());
+                    return Optional.empty();
+                } else if(rule.getRuleType() == RuleType.IncreaseMemory && currentDatasetSize >= rule.getScaleCeiling()){
+                    LOG.info("DB: {} ID: {} is already above the memory scale ceiling: {}gb",db.getName(), dbId, rule.getScaleCeiling());
                     return Optional.empty();
                 }
-                double newDatasetSizeInGb = getNewDatasetSizeInGb(rule, db);
+
+
+                double newDatasetSizeInGb = getNewDatasetSizeInGb(rule, currentDatasetSize);
                 if(newDatasetSizeInGb == db.getDatasetSizeInGb()){
                     LOG.info("DB: {} ID: {} is already at the min/max memory: {}gb",db.getName(), dbId, newDatasetSizeInGb);
                     return Optional.empty();
@@ -107,21 +164,50 @@ public class RedisCloudDatabaseService {
 
                 newDatasetSizeInGb = roundUpToNearestTenth(newDatasetSizeInGb); // round up to nearest 0.1gb for Redis Cloud
 
-                scaleRequest = ScaleRequest.builder().datasetSizeInGb(newDatasetSizeInGb).build();
+                scaleRequest = ScaleRequest.builder().datasetSizeInGb(newDatasetSizeInGb).isCrdb(db.isActiveActiveRedis()).build();
             }
             case IncreaseThroughput, DecreaseThroughput -> {
-                if(db.getThroughputMeasurement().getBy() != ThroughputMeasurement.ThroughputMeasureBy.OperationsPerSecond && rule.getScaleType() != ScaleType.Deterministic){
+                long currentThroughput;
+                if(db.isActiveActiveRedis()){
+                    currentThroughput = db.getCrdbDatabases()[0].getReadOperationsPerSecond();
+                } else{
+                    currentThroughput = db.getThroughputMeasurement().getValue();
+                }
+
+                if(db.getThroughputMeasurement() != null && db.getThroughputMeasurement().getBy() != ThroughputMeasurement.ThroughputMeasureBy.OperationsPerSecond){
                     LOG.info("DB: {} ID: {} is not measured by ops/sec, cannot apply ops/sec rule: {}",db.getName(), dbId, rule.getRuleType());
                     return Optional.empty();
                 }
 
-                long newThroughput = getNewThroughput(rule, db);
-                if(newThroughput == db.getThroughputMeasurement().getValue()){
+                long newThroughput = getNewThroughput(rule, currentThroughput);
+                if(newThroughput == currentThroughput){
                     LOG.info("DB: {} ID: {} is already at the min/max ops/sec: {}",db.getName(), dbId, newThroughput);
                     return Optional.empty();
                 }
 
-                scaleRequest = ScaleRequest.builder().throughputMeasurement(new ThroughputMeasurement(ThroughputMeasurement.ThroughputMeasureBy.OperationsPerSecond, newThroughput)).build();
+                if(db.isActiveActiveRedis()){
+                    List<Region> regions = new ArrayList<>();
+                    for(RedisCloudDatabase crdb : db.getCrdbDatabases()){
+                        Region region = Region.builder()
+                                .region(crdb.getRegion())
+                                .localThroughputMeasurement(
+                                        LocalThroughputMeasurement.builder()
+                                                .readOperationsPerSecond(newThroughput)
+                                                .writeOperationsPerSecond(newThroughput)
+                                                .build())
+                                .build();
+
+                        regions.add(region);
+                    }
+
+                    scaleRequest = ScaleRequest.builder()
+                            .regions(regions.toArray(new Region[0]))
+                            .isCrdb(true)
+                            .build();
+                }
+                else{
+                    scaleRequest = ScaleRequest.builder().isCrdb(false).throughputMeasurement(new ThroughputMeasurement(ThroughputMeasurement.ThroughputMeasureBy.OperationsPerSecond, newThroughput)).build();
+                }
             }
             default -> {
                 return Optional.empty();
@@ -131,9 +217,8 @@ public class RedisCloudDatabaseService {
         return Optional.of(scaleDatabase(dbId, scaleRequest));
     }
 
-    private static long getNewThroughput(Rule rule, RedisCloudDatabase db){
+    private static long getNewThroughput(Rule rule, long currentThroughput){
         long newThroughput;
-        long currentThroughput = db.getThroughputMeasurement().getValue();
         if(rule.getRuleType() == RuleType.IncreaseThroughput){
             switch (rule.getScaleType()){
                 case Step -> {
@@ -156,7 +241,7 @@ public class RedisCloudDatabaseService {
                     newThroughput = currentThroughput - (long)rule.getScaleValue();
                 }
                 case Exponential -> {
-                    newThroughput = (long)Math.ceil(db.getThroughputMeasurement().getValue() * rule.getScaleValue());
+                    newThroughput = (long)Math.ceil(currentThroughput * rule.getScaleValue());
                 }
                 case Deterministic -> {
                     newThroughput = (long)rule.getScaleValue();
@@ -177,15 +262,15 @@ public class RedisCloudDatabaseService {
         return (long) (Math.ceil(value / 500.0) * 500);
     }
 
-    private static double getNewDatasetSizeInGb(Rule rule, RedisCloudDatabase db) {
+    private static double getNewDatasetSizeInGb(Rule rule, double currentDataSetSize) {
         double newDatasetSizeInGb;
         if(rule.getRuleType() == RuleType.IncreaseMemory){
             switch (rule.getScaleType()){
                 case Step -> {
-                    newDatasetSizeInGb = db.getDatasetSizeInGb() + rule.getScaleValue();
+                    newDatasetSizeInGb = currentDataSetSize + rule.getScaleValue();
                 }
                 case Exponential -> {
-                    newDatasetSizeInGb = db.getDatasetSizeInGb() * rule.getScaleValue();
+                    newDatasetSizeInGb = currentDataSetSize * rule.getScaleValue();
                 }
                 case Deterministic -> {
                     newDatasetSizeInGb = rule.getScaleValue();
@@ -198,10 +283,10 @@ public class RedisCloudDatabaseService {
         } else if(rule.getRuleType() == RuleType.DecreaseMemory){
             switch (rule.getScaleType()){
                 case Step -> {
-                    newDatasetSizeInGb = db.getDatasetSizeInGb() - rule.getScaleValue();
+                    newDatasetSizeInGb = currentDataSetSize - rule.getScaleValue();
                 }
                 case Exponential -> {
-                    newDatasetSizeInGb = db.getDatasetSizeInGb() * rule.getScaleValue();
+                    newDatasetSizeInGb = currentDataSetSize * rule.getScaleValue();
                 }
                 case Deterministic -> {
                     newDatasetSizeInGb = rule.getScaleValue();
@@ -219,7 +304,15 @@ public class RedisCloudDatabaseService {
     }
 
     Task scaleDatabase(String dbId, ScaleRequest request){
-        URI uri = URI.create(String.format("%s/subscriptions/%s/databases/%s", Constants.REDIS_CLOUD_URI_BASE, config.getSubscriptionId(), dbId));
+        URI uri;
+
+        if(request.isCrdb()){
+            uri = URI.create(String.format("%s/subscriptions/%s/databases/%s/regions", Constants.REDIS_CLOUD_URI_BASE, config.getSubscriptionId(), dbId));
+
+        }else{
+            uri = URI.create(String.format("%s/subscriptions/%s/databases/%s", Constants.REDIS_CLOUD_URI_BASE, config.getSubscriptionId(), dbId));
+        }
+
         LOG.info("Scaling database {} with request: {}", dbId, request);
         try {
             HttpRequest httpRequest = httpClientConfig.requestBuilder()
@@ -253,5 +346,11 @@ public class RedisCloudDatabaseService {
 
     private static double roundDownToNearestTenth(double value){
         return Math.floor(value * 10) / 10;
+    }
+
+    private static String getInternalUriFromPrivateEndpoint(String privateEndpoint){
+        String splitPort = privateEndpoint.split(":")[0];
+        int firstDotIndex = splitPort.indexOf(".");
+        return splitPort.substring(firstDotIndex+1);
     }
 }
