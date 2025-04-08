@@ -2,14 +2,16 @@ package com.redis.autoscaler;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Builder
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ScaleRequest {
     @Builder.Default
     @JsonIgnore
