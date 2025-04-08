@@ -89,10 +89,10 @@ public class RedisCloudDatabaseServiceTests {
         RedisCloudDatabase db = createActiveDatabaseWithCRDB();
         
         // Mock database retrieval response
-        Subscripition sub = new Subscripition();
+        Subscription sub = new Subscription();
         sub.setDatabases(new RedisCloudDatabase[]{db});
         DatabaseListResponse response = new DatabaseListResponse();
-        response.setSubscription(new Subscripition[]{sub});
+        response.setSubscription(new Subscription[]{sub});
         
         when(httpResponse.statusCode()).thenReturn(200);
         when(httpResponse.body()).thenReturn(objectMapper.writeValueAsString(response));
@@ -136,9 +136,9 @@ public class RedisCloudDatabaseServiceTests {
         
         // For the database count check
         DatabaseListResponse dbListResponse = new DatabaseListResponse();
-        Subscripition sub = new Subscripition();
+        Subscription sub = new Subscription();
         sub.setDatabases(new RedisCloudDatabase[]{db});
-        dbListResponse.setSubscription(new Subscripition[]{sub});
+        dbListResponse.setSubscription(new Subscription[]{sub});
         
         HttpResponse<Object> countResponse = mock(HttpResponse.class);
         when(countResponse.statusCode()).thenReturn(200);
@@ -196,9 +196,9 @@ public class RedisCloudDatabaseServiceTests {
         
         // For the database count check
         DatabaseListResponse dbListResponse = new DatabaseListResponse();
-        Subscripition sub = new Subscripition();
+        Subscription sub = new Subscription();
         sub.setDatabases(new RedisCloudDatabase[]{db});
-        dbListResponse.setSubscription(new Subscripition[]{sub});
+        dbListResponse.setSubscription(new Subscription[]{sub});
         
         HttpResponse<Object> countResponse = mock(HttpResponse.class);
         when(countResponse.statusCode()).thenReturn(200);
@@ -263,9 +263,9 @@ public class RedisCloudDatabaseServiceTests {
         
         // For the database count check
         DatabaseListResponse dbListResponse = new DatabaseListResponse();
-        Subscripition sub = new Subscripition();
+        Subscription sub = new Subscription();
         sub.setDatabases(new RedisCloudDatabase[]{db});
-        dbListResponse.setSubscription(new Subscripition[]{sub});
+        dbListResponse.setSubscription(new Subscription[]{sub});
         
         HttpResponse<Object> countResponse = mock(HttpResponse.class);
         when(countResponse.statusCode()).thenReturn(200);
@@ -321,9 +321,9 @@ public class RedisCloudDatabaseServiceTests {
             
             // For the database count check
             DatabaseListResponse dbListResponse = new DatabaseListResponse();
-            Subscripition sub = new Subscripition();
+            Subscription sub = new Subscription();
             sub.setDatabases(new RedisCloudDatabase[]{db});
-            dbListResponse.setSubscription(new Subscripition[]{sub});
+            dbListResponse.setSubscription(new Subscription[]{sub});
             
             HttpResponse<Object> countResponse = mock(HttpResponse.class);
             when(countResponse.statusCode()).thenReturn(200);
