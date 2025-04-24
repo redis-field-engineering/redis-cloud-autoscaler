@@ -1,0 +1,19 @@
+# Example terraform.tfvars file for active-active deployment
+# Copy this file to terraform.tfvars and fill in your values
+
+gcp_project = "your-gcp-project-id"
+dns-zone-name = "your-dns-zone"
+subdomain = "example.com"
+redis_cloud_account_key = "your-account-key"
+redis_cloud_api_key = "your-api-key"
+last_four_digits = "1234" # Last 4 digits of your Redis Cloud payment method
+gcloud_username = "your-gcp-username"
+gcloud_region = "us-central1"
+gcloud_zone = "us-central1-a"
+ssh_key_file = "~/.ssh/your-key-file"
+
+# Active-Active specific variables
+aa_sub_name = "autoscaler-aa"
+aa_db_name = "autoscaler-aa-db"
+aa_db_password = "your-aa-db-password"
+aa_gcloud_region = "europe-west1" # Secondary region for Active-Active

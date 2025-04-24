@@ -1,5 +1,6 @@
 package com.redis.autoscaler;
 
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
@@ -8,6 +9,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 
 @Configuration
 public class RedisConfig {
+    private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(RedisConfig.class);
+
     @Bean
     public JedisConnectionFactory jedisConnectionFactory() {
         String redisHostAndPort = System.getenv("REDIS_HOST_AND_PORT");
@@ -16,6 +19,7 @@ public class RedisConfig {
 		String redisPassword = System.getenv("REDIS_PASSWORD");
 		String redisUser = System.getenv("REDIS_USER") != null ? System.getenv("REDIS_USER") : "default";
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisHost, redisPort);
+        LOG.info("connecting to redis at {}:{}", redisHost, redisPort);
 
         if(redisPassword != null && !redisPassword.isEmpty()) {
             config.setPassword(redisPassword);

@@ -7,6 +7,6 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DatabaseListResponse {
     private int accountId;
-    private Subscripition[] subscription;
+    private Subscription[] subscription;
 
 }

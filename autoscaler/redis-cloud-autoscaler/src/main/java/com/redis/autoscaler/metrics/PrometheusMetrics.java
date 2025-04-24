@@ -25,6 +25,10 @@ public class PrometheusMetrics {
         }
 
         configuredThroughput.put(dbId, new AtomicLong(throughput));
+        if(dbId == null || instance == null){
+            return;
+        }
+
         Gauge.builder("redis_db_configured_throughput", configuredThroughput.get(dbId), AtomicLong::get)
                 .tag("db", dbId)
                 .tag("instance", instance)
