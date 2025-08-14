@@ -125,7 +125,6 @@ Rule To Scale Redis up 3 GB:
 == Limitations
 
 * The Redis Cloud Autoscaler is currently only available for Redis Cloud Pro Subscriptions
-* The Redis Cloud Autoscaler will currently only operate on Subscriptions with as single database
 * The Redis Cloud Autoscaler will currently only scale a database in (down) deterministically (`Deterministic` is the only valid setting for `DecreaseMemory` and `DecreaseThroughput`)
 
 == Availability

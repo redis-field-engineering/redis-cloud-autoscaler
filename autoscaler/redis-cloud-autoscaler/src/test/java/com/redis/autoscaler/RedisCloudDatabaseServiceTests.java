@@ -147,7 +147,6 @@ public class RedisCloudDatabaseServiceTests {
         // Set up the sequence of responses
         when(httpClient.send(any(), any()))
                 .thenReturn(httpResponse)  // First call - get database
-                .thenReturn(countResponse) // Second call - get database count
                 .thenReturn(scaleResponse); // Third call - scale database
         
         // Execute the rule
@@ -207,9 +206,8 @@ public class RedisCloudDatabaseServiceTests {
         // Set up the sequence of responses
         when(httpClient.send(any(), any()))
                 .thenReturn(httpResponse)  // First call - get database
-                .thenReturn(countResponse) // Second call - get database count
                 .thenReturn(scaleResponse); // Third call - scale database
-        
+
         // Execute the rule
         Optional<Task> taskOpt = service.applyRule(rule);
         
@@ -274,7 +272,6 @@ public class RedisCloudDatabaseServiceTests {
         // Set up the sequence of responses
         when(httpClient.send(any(), any()))
                 .thenReturn(httpResponse)  // First call - get database
-                .thenReturn(countResponse) // Second call - get database count
                 .thenReturn(scaleResponse); // Third call - scale database
         
         // Execute the rule
@@ -332,7 +329,6 @@ public class RedisCloudDatabaseServiceTests {
             // Set up the sequence of responses
             when(httpClient.send(any(), any()))
                     .thenReturn(httpResponse)  // First call - get database
-                    .thenReturn(countResponse) // Second call - get database count
                     .thenReturn(scaleResponse); // Third call - scale database
             
             // Execute the rule
