@@ -129,12 +129,6 @@ public class RedisCloudDatabaseService {
 
         RedisCloudDatabase db = dbOpt.get();
 
-        int numDatabases = getDatabaseCount();
-        if(numDatabases > 1){
-            LOG.warn("Database count for subscription {} is greater than 1, using autoscaler is not supported, skipping rule: {}", config.getSubscriptionId(), rule);
-            return Optional.empty();
-        }
-
 
         ScaleRequest scaleRequest;
         switch (rule.getRuleType()){
