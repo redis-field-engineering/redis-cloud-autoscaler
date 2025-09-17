@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/autoscaler/redis-cloud-autoscaler/redis-cloud-autoscaler.redis-cloud-autoscaler.main.iml" filepath="$PROJECT_DIR$/.idea/modules/autoscaler/redis-cloud-autoscaler/redis-cloud-autoscaler.redis-cloud-autoscaler.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/autoscaler/redis-cloud-autoscaler/redis-cloud-autoscaler.redis-cloud-autoscaler.test.iml" filepath="$PROJECT_DIR$/.idea/modules/autoscaler/redis-cloud-autoscaler/redis-cloud-autoscaler.redis-cloud-autoscaler.test.iml" />
     </modules>
   </component>
 </project>
