@@ -4,7 +4,7 @@
 :project-owner:     redis-field-engineering
 :project-name:      redis-cloud-autoscaler
 :project-group:     com.redis
-:project-version: 0.0.6
+:project-version: 0.0.7
 :project-url:       https://github.com/{project-owner}/{project-name}
 :repo-name:         redis-cloud-autoscaler
 :imagesdir:        .github/images
