@@ -29,6 +29,7 @@ The Redis Cloud Autoscaler is and application designed to run in your own enviro
 | Name | Description
 | REDIS_HOST_AND_PORT | The private endpoint of the Redis Cloud subscription database.
 | REDIS_PASSWORD | The password for accessing the Redis Cloud database.
+| REDIS_USE_SSL | Whether to use TLS when connecting to the Redis Cloud database (true/false).
 | REDIS_CLOUD_API_KEY | The API key for interacting with Redis Cloud services.
 | REDIS_CLOUD_ACCOUNT_KEY | The account key for authenticating with Redis Cloud.
 | REDIS_CLOUD_SUBSCRIPTION_ID | The ID of the Redis Cloud subscription.

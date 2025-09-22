@@ -84,7 +84,7 @@ resource "google_compute_firewall" "autoscale_allow_egress" {
 
 
 data "rediscloud_payment_method" "card"{
-    card_type = "Visa"
+    card_type = "Mastercard"
     last_four_numbers = var.last_four_digits
 }
 
@@ -108,7 +108,7 @@ resource "rediscloud_subscription" "autoscaling_sub" {
 
     creation_plan {
         memory_limit_in_gb = 5
-        quantity = 3
+        quantity = 1
         replication = false
         throughput_measurement_by = "operations-per-second"
         throughput_measurement_value = 25000
