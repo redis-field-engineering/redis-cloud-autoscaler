@@ -312,11 +312,7 @@
 							"raw": "http://{{host_name}}:8080/rules",
 							"protocol": "http",
 							"host": [
-								"autoscaler",
-								"autoscale",
-								"demo",
-								"redislabs",
-								"com"
+								"{{host_name}}"
 							],
 							"port": "8080",
 							"path": [
@@ -344,11 +340,7 @@
 							"raw": "http://{{host_name}}:8080/rules",
 							"protocol": "http",
 							"host": [
-								"autoscaler",
-								"autoscale",
-								"demo",
-								"redislabs",
-								"com"
+								"{{host_name}}"
 							],
 							"port": "8080",
 							"path": [
@@ -376,11 +368,7 @@
 							"raw": "http://{{host_name}}:8080/rules",
 							"protocol": "http",
 							"host": [
-								"autoscaler",
-								"autoscale",
-								"demo",
-								"redislabs",
-								"com"
+								"{{host_name}}"
 							],
 							"port": "8080",
 							"path": [
@@ -408,11 +396,7 @@
 							"raw": "http://{{host_name}}:8080/rules",
 							"protocol": "http",
 							"host": [
-								"autoscaler",
-								"autoscale",
-								"demo",
-								"redislabs",
-								"com"
+								"{{host_name}}"
 							],
 							"port": "8080",
 							"path": [
