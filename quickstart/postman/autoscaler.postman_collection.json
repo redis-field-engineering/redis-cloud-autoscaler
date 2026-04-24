@@ -309,7 +309,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://autoscaler.autoscale.demo.redislabs.com:8080/rules",
+							"raw": "http://{{host_name}}:8080/rules",
 							"protocol": "http",
 							"host": [
 								"autoscaler",
@@ -341,7 +341,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://autoscaler.autoscale.demo.redislabs.com:8080/rules",
+							"raw": "http://{{host_name}}:8080/rules",
 							"protocol": "http",
 							"host": [
 								"autoscaler",
@@ -373,7 +373,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://autoscaler.autoscale.demo.redislabs.com:8080/rules",
+							"raw": "http://{{host_name}}:8080/rules",
 							"protocol": "http",
 							"host": [
 								"autoscaler",
@@ -405,7 +405,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://autoscaler.autoscale.demo.redislabs.com:8080/rules",
+							"raw": "http://{{host_name}}:8080/rules",
 							"protocol": "http",
 							"host": [
 								"autoscaler",
