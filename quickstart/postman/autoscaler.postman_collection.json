@@ -309,14 +309,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://autoscaler.autoscale.demo.redislabs.com:8080/rules",
+							"raw": "http://{{host_name}}:8080/rules",
 							"protocol": "http",
 							"host": [
-								"autoscaler",
-								"autoscale",
-								"demo",
-								"redislabs",
-								"com"
+								"{{host_name}}"
 							],
 							"port": "8080",
 							"path": [
@@ -341,14 +337,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://autoscaler.autoscale.demo.redislabs.com:8080/rules",
+							"raw": "http://{{host_name}}:8080/rules",
 							"protocol": "http",
 							"host": [
-								"autoscaler",
-								"autoscale",
-								"demo",
-								"redislabs",
-								"com"
+								"{{host_name}}"
 							],
 							"port": "8080",
 							"path": [
@@ -373,14 +365,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://autoscaler.autoscale.demo.redislabs.com:8080/rules",
+							"raw": "http://{{host_name}}:8080/rules",
 							"protocol": "http",
 							"host": [
-								"autoscaler",
-								"autoscale",
-								"demo",
-								"redislabs",
-								"com"
+								"{{host_name}}"
 							],
 							"port": "8080",
 							"path": [
@@ -405,14 +393,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://autoscaler.autoscale.demo.redislabs.com:8080/rules",
+							"raw": "http://{{host_name}}:8080/rules",
 							"protocol": "http",
 							"host": [
-								"autoscaler",
-								"autoscale",
-								"demo",
-								"redislabs",
-								"com"
+								"{{host_name}}"
 							],
 							"port": "8080",
 							"path": [
