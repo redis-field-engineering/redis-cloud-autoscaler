@@ -106,7 +106,7 @@ Rule to Scale Redis to 50gb at 7:00am every weekday:
   "scaleValue": 50,
   "scaleCeiling": 50,
   "triggerType":"scheduled",
-  "triggerValue":"0 7 * * 1-5"
+  "triggerValue":"0 0 7 * * 1-5"
 }
 ----
 
